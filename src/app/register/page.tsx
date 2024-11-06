@@ -55,7 +55,7 @@ export default function page() {
     }
 
     return (
-        <form onSubmit={onSubmit} className='text-center w-min m-auto'>
+        <form onSubmit={onSubmit} className='text-center w-min m-auto [&_input]:text-black'>
             <h1 className='text-left text-3xl mt-[2rem] font-bold'>Register</h1>
             <div className='flex flex-col justify-center w-[20rem] mx-auto mt-[.5rem] mb-[1rem] gap-2'>
                 <Input placeholder='Username' id='username' type='text' name='username' onChange={handleChange} value={state.username} />

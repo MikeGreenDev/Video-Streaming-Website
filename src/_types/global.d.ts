@@ -16,14 +16,6 @@ declare global {
         anchorEl: HTMLElement;
     }
 
-    interface FullSeries extends SeriesMedia{
-        seasons: FullSeason[]
-    }
-
-    interface FullSeason extends Season{
-        episodes: Episode[]
-    }
-
     type FileSrc = {
         src: string;
         file: File | FileInfo;

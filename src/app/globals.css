@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .3);
+    display: inline-block;
+    margin: 3px 6px;
+}
+
+@layer base {
+    body {
+        @apply text-white bg-background
+    }
+
+    input[type=range] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    input[type="range"]:focus {
+        outline: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        @apply bg-primary h-[8px] rounded-lg cursor-pointer
+    }
+
+    input[type=range]::-moz-range-track {
+        @apply bg-primary h-[8px] rounded-lg cursor-pointer
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        appearance: none;
+        -webkit-appearance: none;
+        margin-top: -3px;
+        @apply bg-secondary h-[14px] w-[14px] rounded-full
+    }
+
+    input[type=range]::-moz-range-thumb {
+        appearance: none;
+        -moz-appearance: none;
+        border: none;
+        margin: 0;
+        padding: 0;
+        @apply bg-secondary h-[14px] w-[14px] rounded-full my-auto
+    }
+
+    /***** Chrome, Safari, Opera, and Edge Chromium *****/
+    input[type="range"]:focus::-webkit-slider-thumb {
+        border: 1px solid #053a5f;
+        outline: 3px solid #053a5f;
+        outline-offset: 0.125rem;
+    }
+
+    /******** Firefox ********/
+    input[type="range"]:focus::-moz-range-thumb {
+        border: 1px solid #053a5f;
+        outline: 3px solid #053a5f;
+        outline-offset: 0.125rem;
+    }
+}

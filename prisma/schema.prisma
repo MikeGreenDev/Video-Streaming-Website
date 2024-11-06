@@ -20,7 +20,7 @@ model User {
     passwordHash String @db.VarChar(255)
     role UserRole @default(User)
     videos Video[] @relation("Uploader")
-    subCnt Int
+    subCnt Int @default(0)
 
     @@map("users")
 }
@@ -29,13 +29,14 @@ model Video {
     id String @id @default(uuid())
     title String
     description String
-    thumbnailID String // MediaID
-    mediaID String // MediaID
     uploader User @relation("Uploader", fields: [uploaderID], references: [id])
     uploaderID String // UserID
+    tags String
     visibility VideoVisibility @default(Private)
     likes Int @default(0)
     dislikes Int @default(0)
+    thumbnail Json? // Media
+    media Json? // Media
 
     @@map("videos")
 }
