@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt"
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth, { AuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma from "@/lib/prismadb"
@@ -47,13 +47,13 @@ export const authOptions: AuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.role = user.role
+                token.user = user as any
             }
             console.log("JWT Callback", { token, user });
             return token;
         },
         async session ({ session, token }) {
-            if (session?.user) session.user.role = token.role as UserRole
+            if (session?.user) session.user = token as any
             console.log("Session Callback", { session, token });
             return session
         },
@@ -67,5 +67,4 @@ export const authOptions: AuthOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST }
-
 

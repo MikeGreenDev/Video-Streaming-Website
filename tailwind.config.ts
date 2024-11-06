@@ -21,8 +21,8 @@ const config: Config = {
       colors: {
           background: 'rgb(20,20,20)',
           backgroundHL: 'rgb(10,10,10)',
-          primary: '#CF00CF',
-          secondary: '#FFAFFF'
+          primary: '#0000FF',
+          secondary: '#0000AF'
       }
     },
   },

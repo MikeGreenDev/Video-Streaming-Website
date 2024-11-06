@@ -17,6 +17,10 @@
         @apply text-white bg-background
     }
 
+    button.btn {
+        @apply p-2 my-2 bg-secondary rounded-lg border-2 border-transparent hover:bg-transparent hover:border-secondary
+    }
+
     input[type=range] {
         appearance: none;
         -webkit-appearance: none;

@@ -7,7 +7,7 @@ type IUser = {} & DefaultUser & User
 declare module "next-auth" {
     interface Session {
         user: {
-        } & DefaultSession['user'] & User
+        } & DefaultSession['user'] & IUser
     }
 
     interface User extends IUser {}
