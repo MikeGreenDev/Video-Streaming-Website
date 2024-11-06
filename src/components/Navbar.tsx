@@ -4,7 +4,6 @@ import { ProfileBtn } from "./ProfileBtn";
 import { UserRole } from "@prisma/client";
 import Logo from "./Logo";
 import Login from "./Login";
-import Sidebar from "./Sidebar";
 import { useSession } from "next-auth/react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import Link from "next/link";
