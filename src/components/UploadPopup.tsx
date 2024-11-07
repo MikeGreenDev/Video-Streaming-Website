@@ -83,7 +83,6 @@ export default function UploadPopup(props: UploadPopupProps) {
                 title: mediaState.title,
                 description: mediaState.description,
                 tags: mediaState.tags,
-                userID: session?.user.id
             }
             let opts: AxiosRequestConfig = {
                 headers: { "Content-Type": "application/json" },
@@ -100,7 +99,6 @@ export default function UploadPopup(props: UploadPopupProps) {
             let fd = new FormData();
             if (videoID === null) throw new Error("Video ID in null");
             fd.append("videoID", videoID);
-            fd.append("userID", session?.user.id || "")
             if (mediaState.file) {
                 fd.append("files", mediaState.file);
             }

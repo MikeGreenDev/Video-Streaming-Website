@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -24,6 +25,8 @@ model User {
     visibility Visibility @default(Public)
     header Json? // Media
     profilePicture Json? // Media
+    subscribedTo User[] @relation("UserSubscribers")
+    subscribers User[] @relation("UserSubscribers")
 
     @@map("users")
 }

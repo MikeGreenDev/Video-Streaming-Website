@@ -1,10 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+
+//const omitObj: Prisma.Subset = { omit: { user: { passwordHash: true } } }
 
 declare global {
-  var prisma: PrismaClient | undefined;
+    var prisma: PrismaClient<any> | undefined;
 }
 
-const client = globalThis.prisma || new PrismaClient();
+const client = globalThis.prisma || new PrismaClient({ omit: { user: { passwordHash: true } } });
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = client;
 

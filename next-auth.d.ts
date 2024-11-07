@@ -1,8 +1,8 @@
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { DefaultSession, DefaultUser } from "next-auth";
 import { DefaultJWT } from "next-auth/jwt";
 
-type IUser = {} & DefaultUser & User
+type IUser = {} & DefaultUser & Prisma.UserGetPayload<{include: {subscribers: true, subscribedTo: true}}>
 
 declare module "next-auth" {
     interface Session {

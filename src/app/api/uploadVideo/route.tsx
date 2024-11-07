@@ -4,6 +4,8 @@ import fs from "fs";
 import {v4 as uuidV4} from 'uuid'
 import prisma from '@/lib/prismadb'
 import { MediaType } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 const UPLOAD_DIR = path.resolve(process.env.UPLOAD_PATH ?? "", "public/uploads/")
 
@@ -11,7 +13,11 @@ export async function POST(req: NextRequest) {
     const data = await req.formData();
     const files: File[] = data.getAll('files') as File[];
     const vidID: string = data.get('videoID') as string;
-    const userID: string = data.get('userID') as string;
+    const session = await getServerSession(authOptions)
+    const userID = session?.user.id
+    if (!userID){
+        return NextResponse.json({ error: "User not found" }, { status: 400 });
+    }
     let srcs: string[] = []
 
     if (!files || files.length === 0) {
