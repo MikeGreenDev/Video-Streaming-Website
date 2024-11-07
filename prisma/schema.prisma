@@ -27,6 +27,8 @@ model User {
     profilePicture Json? // Media
     subscribedTo User[] @relation("UserSubscribers")
     subscribers User[] @relation("UserSubscribers")
+    likedVideos Video[] @relation("Likes")
+    dislikedVideos Video[] @relation("Dislikes")
 
     @@map("users")
 }
@@ -39,8 +41,8 @@ model Video {
     uploaderID String // UserID
     tags String
     visibility VideoVisibility @default(Private)
-    likes Int @default(0)
-    dislikes Int @default(0)
+    likes User[] @relation("Likes")
+    dislikes User[] @relation("Dislikes")
     thumbnail Json? // Media
     media Json? // Media
 

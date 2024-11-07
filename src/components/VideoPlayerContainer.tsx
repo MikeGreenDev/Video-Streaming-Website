@@ -1,6 +1,6 @@
 "use client"
 import VideoPlayer from '@/containers/VideoPlayer/VideoPlayer'
-import { Video } from '@prisma/client';
+import { Prisma, Video } from '@prisma/client';
 import axios, { AxiosRequestConfig } from 'axios';
 import { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
@@ -10,17 +10,23 @@ import React, { useEffect, useState } from 'react'
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6';
 import { IoMdPerson } from 'react-icons/io';
 
+type VideoResponse = {
+    video: Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }>
+}
+
 export default function VideoPlayerContainer() {
     const { data: session, update } = useSession();
-    const [video, setVideo] = useState<Video | null>(null)
+    const [video, setVideo] = useState<Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }> | null>(null)
     const [videoUploader, setVideoUploader] = useState<User | null>(null)
     const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+    const [isLiked, setIsLiked] = useState<boolean>(false);
+    const [isDisliked, setIsDisliked] = useState<boolean>(false);
     const searchParams = useSearchParams();
     const videoID = searchParams.get("v") || "";
     const timeSkip = searchParams.get("t") || "";
 
     useEffect(() => {
-        axios.get(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
+        axios.get<VideoResponse>(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
             setVideo(res.data.video)
             axios.get(`/api/getPublicUser?userID=${res.data.video.uploaderID}`).then((res) => {
                 setVideoUploader(res.data.publicUser);
@@ -48,7 +54,7 @@ export default function VideoPlayerContainer() {
                 }
             })
         }
-        if (!found){
+        if (!found) {
             setIsSubscribed(false);
         }
     }
@@ -64,6 +70,24 @@ export default function VideoPlayerContainer() {
         }
         axios.post("/api/handleSubscribing", d, opts).then(() => {
             update()
+        })
+    }
+
+    const handleLikeDisLike = ({ like, dislike }: { like: boolean, dislike: boolean }) => {
+        const d = {
+            like: like,
+            dislike: dislike,
+            videoID: video?.id
+        }
+        let opts: AxiosRequestConfig = {
+            headers: { "Content-Type": "application/json" },
+        }
+        axios.post("/api/handleLiking", d, opts).then(() => {
+            axios.get<VideoResponse>(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
+                setVideo(res.data.video)
+            })
+            setIsLiked(like);
+            setIsDisliked(dislike)
         })
     }
 
@@ -96,9 +120,9 @@ export default function VideoPlayerContainer() {
                         </div>
                         <div className='grow' />
                         <div className='p-4 bg-backgroundHL rounded-lg flex flex-row gap-2'>
-                            <button className='flex flex-row gap-2'><FaThumbsUp />{video?.likes}</button>
+                            <button onClick={() => handleLikeDisLike({ like: !isLiked, dislike: false })} className='flex flex-row gap-2'><FaThumbsUp />{video?.likes.length}</button>
                             <div className='w-[2px] h-full bg-white rounded-lg' />
-                            <button className='flex flex-row gap-2'><FaThumbsDown />{video?.dislikes}</button>
+                            <button onClick={() => handleLikeDisLike({ like: false, dislike: !isDisliked })} className='flex flex-row gap-2'><FaThumbsDown />{video?.dislikes.length}</button>
                         </div>
                     </div>
                     <div className='my-2 bg-backgroundHL p-4 rounded-lg'>

@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
         const data = await prisma.video.findUnique({
             where: {
                 id: videoID
-            }
+            },
+            include: {likes: true, dislikes: true}
         })
         return NextResponse.json({ success: true, video: data }, {
             status: 200,
