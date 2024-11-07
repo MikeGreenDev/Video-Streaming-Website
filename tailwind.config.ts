@@ -21,7 +21,7 @@ const config: Config = {
       colors: {
           background: 'rgb(20,20,20)',
           backgroundHL: 'rgb(10,10,10)',
-          primary: '#0000FF',
+          primary: '#67B7D1',
           secondary: '#0000AF'
       }
     },

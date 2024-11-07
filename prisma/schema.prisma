@@ -21,6 +21,9 @@ model User {
     role UserRole @default(User)
     videos Video[] @relation("Uploader")
     subCnt Int @default(0)
+    visibility Visibility @default(Public)
+    header Json? // Media
+    profilePicture Json? // Media
 
     @@map("users")
 }
@@ -58,6 +61,12 @@ enum UserRole {
 }
 
 enum VideoVisibility {
+    Private
+    Hidden
+    Public
+}
+
+enum Visibility {
     Private
     Hidden
     Public
