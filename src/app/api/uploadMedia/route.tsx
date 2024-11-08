@@ -13,12 +13,12 @@ export async function POST(req: NextRequest) {
     const data = await req.formData();
     const files: File[] = data.getAll('files') as File[];
     const vidID: string = data.get('videoID') as string;
+    const type: string = data.get('type') as string;
     const session = await getServerSession(authOptions)
     const userID = session?.user.id
     if (!userID){
         return NextResponse.json({ error: "User not found" }, { status: 400 });
     }
-    let srcs: string[] = []
 
     if (!files || files.length === 0) {
         return NextResponse.json({ error: "No Files received." }, { status: 400 });
@@ -57,30 +57,43 @@ export async function POST(req: NextRequest) {
                     filename,
                     buffer
                 )
-                srcs.push(filename)
             } catch (e: any) {
                 return NextResponse.json({ error: e }, { status: 409 });
+            }
+
+            let mt: MediaType = MediaType.Video;
+            if (type === "ProfilePicture"){
+                mt = MediaType.ProfilePicture
+            }else if (type === "Thumbnail"){
+                mt = MediaType.Thumbnail
             }
 
             const mr = await prisma.media.create({
                 data: {
                     userID: userID,
                     src: filename,
-                    type: MediaType.Video,
+                    type: mt,
                     videoID: vidID
                 }
             })
+
+            let vd = {}
+            if (type === "Video"){
+                vd = {media: JSON.stringify(mr)}
+            }else if (type === "ProfilePicture"){
+                vd = {profilePicture: JSON.stringify(mr)}
+            }else if (type === "Thumbnail"){
+                vd = {thumbnail: JSON.stringify(mr)}
+            }
 
             const r = await prisma.video.update({
                 where: {
                     id: vidID
                 },
-                data: {
-                    media: JSON.stringify(mr)
-                }
+                data: vd
             })
         }
     }
-    return NextResponse.json({ success: true, files: files, srcs: srcs }, { status: 200 });
+    return NextResponse.json({ success: true, files: files }, { status: 200 });
 }
 

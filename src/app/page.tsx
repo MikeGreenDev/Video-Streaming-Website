@@ -10,7 +10,7 @@ export default async function Home() {
     return (
         <div className="flex flex-wrap gap-6 justify-center">
             {videos.map((v: Video) => (
-                <VideoCard link={JSON.parse(v.media as string).src} title={v.title} />
+                <VideoCard link={"/video?v=" + v.id} title={v.title} thumbnail={JSON.parse(v.thumbnail as string)?.src} />
             ))}
         </div>
     );

@@ -3,14 +3,16 @@ import React, { Dispatch, Reducer, SetStateAction, useReducer, useState } from '
 import { FaX } from 'react-icons/fa6'
 import Dropzone from './Dropzone'
 import axios, { AxiosProgressEvent, AxiosRequestConfig } from 'axios'
-import { User } from 'next-auth'
 import { useSession } from 'next-auth/react'
+import Image from 'next/image'
 
 type UploadMediaState = {
     title: string
     description: string
     tags: string
     file: File | null
+    thumbnail: File | null
+    thumbnailPreview: string
 }
 
 type Action = {
@@ -40,6 +42,16 @@ function reducer(state: UploadMediaState, action: Action): UploadMediaState {
                 return { ...state, file: action.arg }
             }
             break;
+        case "CHANGE_THUMBNAIL":
+            if (action.arg instanceof File || action.arg === null) {
+                return { ...state, thumbnail: action.arg }
+            }
+            break;
+        case "CHANGE_THUMBNAIL_PREVIEW":
+            if (typeof action.arg === "string") {
+                return { ...state, thumbnailPreview: action.arg }
+            }
+            break;
         default:
             throw new Error("Invalid UploadMedia Argument")
     }
@@ -54,19 +66,31 @@ type UploadPopupProps = {
 }
 
 export default function UploadPopup(props: UploadPopupProps) {
-    const {data: session} = useSession();
+    const { data: session } = useSession();
     console.log(session)
     const acceptedFileTypes = 'video/*'
     const initMediaState: UploadMediaState = {
         title: "",
         description: "",
         tags: "",
-        file: null
+        file: null,
+        thumbnail: null,
+        thumbnailPreview: ""
     }
     const [mediaState, dispatchMedia] = useReducer<Reducer<UploadMediaState, Action>>(reducer, initMediaState)
     const fileCallback = (files: File[]) => {
         // TODO: File validation
         dispatchMedia({ type: "CHANGE_FILE", arg: files[0] })
+    }
+
+    const thumbnailCallback = (files: File[]) => {
+        const fileReader: FileReader = new FileReader;
+        fileReader.readAsDataURL(files[0])
+        fileReader.onload = function() {
+            dispatchMedia({ type: "CHANGE_THUMBNAIL_PREVIEW", arg: fileReader.result as string });
+        }
+
+        dispatchMedia({ type: "CHANGE_THUMBNAIL", arg: files[0] })
     }
 
     const closeBtn = () => {
@@ -92,6 +116,7 @@ export default function UploadPopup(props: UploadPopupProps) {
             videoID = r.data.videoID;
         } catch (e: any) {
             console.error(e);
+            return
         }
 
         try {
@@ -99,6 +124,38 @@ export default function UploadPopup(props: UploadPopupProps) {
             let fd = new FormData();
             if (videoID === null) throw new Error("Video ID in null");
             fd.append("videoID", videoID);
+            fd.append("type", "Thumbnail")
+            if (mediaState.thumbnail) {
+                fd.append("files", mediaState.thumbnail);
+            }
+            let opts: AxiosRequestConfig = {
+                headers: { "Content-Type": "multipart/form-data" },
+                onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+                    if (props.fileProgressCallback) {
+                        const loaded = progressEvent.loaded;
+                        const total = progressEvent.total || 0;
+                        const percentage = (loaded * 100) / total;
+
+                        // Calculate the progress duration
+                        const timeElapsed = Date.now() - startAt;
+                        const uploadSpeed = loaded / timeElapsed;
+                        const duration = (total - loaded) / uploadSpeed;
+                        props.fileProgressCallback(+percentage.toFixed(2), duration);
+                    }
+                },
+            }
+            const thumbnailData = await axios.post("/api/uploadMedia", fd, opts);
+        }catch(e){
+            console.error(e)
+            return
+        }
+
+        try {
+            let startAt = Date.now();
+            let fd = new FormData();
+            if (videoID === null) throw new Error("Video ID in null");
+            fd.append("videoID", videoID);
+            fd.append("type", "Video")
             if (mediaState.file) {
                 fd.append("files", mediaState.file);
             }
@@ -124,10 +181,11 @@ export default function UploadPopup(props: UploadPopupProps) {
                 props.videoInfoCallback(videoID)
             }
 
-            const data = await axios.post("/api/uploadVideo", fd, opts);
-            console.log(data)
+            const videoData = await axios.post("/api/uploadMedia", fd, opts);
+            console.log(videoData)
         } catch (e: any) {
             console.error(e)
+            return
         }
     }
 
@@ -148,15 +206,28 @@ export default function UploadPopup(props: UploadPopupProps) {
                         </div>
                         <input type='text' placeholder='Tags' name='Tags' id='tags' onChange={(e) => dispatchMedia({ type: "CHANGE_TAGS", arg: e.currentTarget.value })} />
                     </div>
-                    <div className='flex-grow'>
-                        {mediaState.file === null ?
-                            <Dropzone name="Video" acceptedFileTypes={acceptedFileTypes} fileCallback={fileCallback} />
-                            :
-                            <div className='flex flex-row items-center gap-2'>
-                                <button onClick={() => dispatchMedia({ type: "CHANGE_FILE", arg: null })} className='hover:text-red-500'><FaX /></button>
-                                <p>{mediaState.file.name}</p>
-                            </div>
-                        }
+                    <div className='flex-grow flex flex-col'>
+                        <div>
+                            {mediaState.thumbnail === null ?
+                                <Dropzone name="Thumbnail" acceptedFileTypes={"image/*"} fileCallback={thumbnailCallback} />
+                                :
+                                <div className='flex flex-row items-center gap-2'>
+                                    <button onClick={() => dispatchMedia({ type: "CHANGE_THUMBNAIL", arg: null })} className='hover:text-red-500'><FaX /></button>
+                                    <p>{mediaState.thumbnail.name}</p>
+                                    <Image src={mediaState.thumbnailPreview} width={200} height={200} alt='Thumbnail Preview' />
+                                </div>
+                            }
+                        </div>
+                        <div>
+                            {mediaState.file === null ?
+                                <Dropzone name="Video" acceptedFileTypes={acceptedFileTypes} fileCallback={fileCallback} />
+                                :
+                                <div className='flex flex-row items-center gap-2'>
+                                    <button onClick={() => dispatchMedia({ type: "CHANGE_FILE", arg: null })} className='hover:text-red-500'><FaX /></button>
+                                    <p>{mediaState.file.name}</p>
+                                </div>
+                            }
+                        </div>
                     </div>
                     <div className='!m-0'>
                         <button className='w-full' onClick={() => closeBtn()}>

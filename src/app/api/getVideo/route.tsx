@@ -30,10 +30,18 @@ export async function GET(req: NextRequest) {
 
     const videoID = urlParams.get('videoID');
     // Get the video entry from the DB
-    const videoRes = await axios.get(`${getCurURL()}/api/getVideoEntry?videoID=${videoID}`)
-    const videoPath = JSON.parse(videoRes.data.video.media).src
+    let videoRes;
+    let videoPath;
+    try {
+        videoRes = await axios.get(`${getCurURL()}/api/getVideoEntry?videoID=${videoID}`)
+        videoPath = JSON.parse(videoRes.data.video.media).src
+    } catch (e) {
+        return NextResponse.json({ error: e }, {
+            status: 528,
+        })
+    }
     // Check that the file exists
-    if (!fs.existsSync(videoPath)){
+    if (!fs.existsSync(videoPath)) {
         return NextResponse.json({ error: "File Doesn't exist", video: videoRes }, {
             status: 508,
         })
