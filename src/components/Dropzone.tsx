@@ -58,7 +58,7 @@ function DropZone({ name, acceptedFileTypes, fileCallback, multiple }:
     return (
         <>
             <div
-                className='dropzone flex flex-col justify-center items-center border-dashed border-2 border-[#ccc] h-full w-full'
+                className='dropzone flex flex-col justify-center items-center border-dashed border-2 border-[#ccc] h-full w-full p-2'
                 onDrop={(e) => handleDrop(e)}
                 onDragOver={(e) => handleDragOver(e)}
                 onDragEnter={(e) => handleDragEnter(e)}
@@ -72,7 +72,7 @@ function DropZone({ name, acceptedFileTypes, fileCallback, multiple }:
                     onChange={(e) => handleFileSelect(e)}
                     multiple={multiple}
                 />
-                <label htmlFor={`fileSelect${name}`} className="mt-[1rem] bg-blue-800 rounded !text-inherit cursor-pointer inline-block px-1 py-3 text-center select-none
+                <label htmlFor={`fileSelect${name}`} className="mt-[1em] bg-blue-800 rounded !text-inherit cursor-pointer inline-block px-1 py-3 text-center select-none
                     hover:text-[#fff] focus:text-[#fff] focus:outlline-dotted focus:outline-[5px] focus:outline-white">Select {name}</label>
 
                 <h3 className='uploadMessage my-[1em] text-white'>

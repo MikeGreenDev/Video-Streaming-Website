@@ -1,0 +1,4 @@
+- Make the profile's page sidebar look better
+- Create a profile page that lets user change settings
+- Show progress of the video being uploaded
+- Reset the upload video popup when it gets uploaded
