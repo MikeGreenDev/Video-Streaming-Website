@@ -1,5 +1,6 @@
 "use client"
 import Profile from '@/components/Profile'
+import { VideoUploadList } from '@/components/VideoUploadList'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
 import { FaVideo } from 'react-icons/fa6'
@@ -21,7 +22,7 @@ function getMainPage(): React.ReactNode {
         )
     } else if (loc == ParamLocation.Videos.toString()) {
         return (
-            <div>Videos</div>
+            <VideoUploadList />
         )
     }
 }

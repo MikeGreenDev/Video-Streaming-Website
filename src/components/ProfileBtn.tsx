@@ -21,7 +21,7 @@ export function ProfileBtn(props: ProfileBtnProps) {
         {
             id: "UploadVideo",
             label: "Upload Video",
-            url: "/upload"
+            url: "/profile?l=Videos"
         }
     ]
 
