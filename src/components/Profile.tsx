@@ -2,9 +2,11 @@
 import { useSession } from 'next-auth/react'
 import React, { Reducer, useReducer, useState } from 'react'
 import Dropzone from './Dropzone';
-import { Media } from '@prisma/client';
+import { Media, MediaType } from '@prisma/client';
 import Image from 'next/image';
 import { FaX } from 'react-icons/fa6';
+import axios, { AxiosRequestConfig } from 'axios';
+import { getImageSrcFromPath } from '@/lib/utility';
 
 type SettingsState = {
     username: string;
@@ -35,6 +37,7 @@ function reducer(state: SettingsState, action: Action): SettingsState {
             break;
         case "CHANGE_PROFILE_PICTURE":
             if (action.arg instanceof File || action.arg === null) {
+                console.log("Changing PP", action.arg)
                 return { ...state, profilePicture: action.arg }
             }
             break;
@@ -60,37 +63,70 @@ function reducer(state: SettingsState, action: Action): SettingsState {
 }
 
 export default function Profile() {
-    const { data: session } = useSession();
+    const { data: session, update } = useSession();
     const [isSaving, setIsSaving] = useState<boolean>(false)
     const initSettingsState: SettingsState = {
         username: session?.user.username || "",
         password: "",
         email: session?.user.email || "",
-        profilePicture: JSON.parse(session?.user.profilePicture as string) || null,
+        profilePicture: session?.user.profilePicture as Media || null,
         profilePicturePreview: "",
-        header: JSON.parse(session?.user.header as string) || null,
+        header: session?.user.header as Media || null,
         headerPreview: "",
     }
     const [settingsState, dispatchSettings] = useReducer<Reducer<SettingsState, Action>>(reducer, initSettingsState)
 
     const profilePictureCallback = (files: File[]) => {
+        dispatchSettings({ type: "CHANGE_PROFILE_PICTURE", arg: files[0] })
         const fileReader: FileReader = new FileReader;
         fileReader.readAsDataURL(files[0])
         fileReader.onload = function() {
+            dispatchSettings({ type: "CHANGE_PROFILE_PICTURE", arg: files[0] })
             dispatchSettings({ type: "CHANGE_PROFILE_PICTURE_PREVIEW", arg: fileReader.result as string });
         }
-
-        dispatchSettings({ type: "CHANGE_PROFILE_PICTURE", arg: files[0] })
     }
 
     const headerCallback = (files: File[]) => {
+        dispatchSettings({ type: "CHANGE_HEADER", arg: files[0] })
         const fileReader: FileReader = new FileReader;
         fileReader.readAsDataURL(files[0])
         fileReader.onload = function() {
+            dispatchSettings({ type: "CHANGE_HEADER", arg: files[0] })
             dispatchSettings({ type: "CHANGE_HEADER_PREVIEW", arg: fileReader.result as string });
         }
+    }
 
-        dispatchSettings({ type: "CHANGE_HEADER", arg: files[0] })
+    const saveSettings = () => {
+        setIsSaving(true)
+        const fd = new FormData();
+        fd.append('username', settingsState.username);
+        fd.append('email', settingsState.email);
+        fd.append('profilePicture', settingsState.profilePicture as File);
+        fd.append('header', settingsState.header as File);
+        let opts: AxiosRequestConfig = {
+            headers: { "Content-Type": "multipart/form-data" },
+        }
+        axios.post("/api/updateSettings", fd, opts).then(() => {
+            setIsSaving(false)
+            update();
+        })
+    }
+
+    const getImgSrc = (type: MediaType): string => {
+        if (type == MediaType.Header) {
+            if (settingsState.header instanceof File || settingsState.header === null) {
+                return settingsState.headerPreview;
+            } else {
+                return getImageSrcFromPath(settingsState.header.src);
+            }
+        } else if (type == MediaType.ProfilePicture) {
+            if (settingsState.profilePicture instanceof File || settingsState.profilePicture === null) {
+                return settingsState.profilePicturePreview;
+            } else {
+                return getImageSrcFromPath(settingsState.profilePicture.src);
+            }
+        }
+        return ""
     }
 
     return (
@@ -100,8 +136,12 @@ export default function Profile() {
                     <Dropzone name="Header" acceptedFileTypes={"image/*"} fileCallback={headerCallback} />
                     :
                     <div className='relative'>
-                        <button onClick={() => dispatchSettings({ type: "CHANGE_HEADER", arg: null })} className='hover:text-red-500 text-white absolute top-2 left-2'><FaX strokeWidth={30} stroke='black'/></button>
-                        <Image src={settingsState.headerPreview} width={200} height={200} alt='Header Preview' style={{width: '100%', height: 'auto'}}/>
+                        <button onClick={() => dispatchSettings({ type: "CHANGE_HEADER", arg: null })} className='hover:text-red-500 text-white absolute top-2 left-2'><FaX strokeWidth={30} stroke='black' /></button>
+                        {settingsState.headerPreview !== null ?
+                            <Image src={getImgSrc(MediaType.Header)} width={2000} height={2000} quality={100} alt='Header Preview' style={{ width: '100%', height: 'auto' }} />
+                            :
+                            <div>Loading</div>
+                        }
                     </div>
                 }
             </div>
@@ -112,7 +152,7 @@ export default function Profile() {
                         :
                         <div className='relative'>
                             <button onClick={() => dispatchSettings({ type: "CHANGE_PROFILE_PICTURE", arg: null })} className='hover:text-red-500 text-white absolute top-2 left-2'><FaX strokeWidth={30} stroke='black' /></button>
-                            <Image src={settingsState.profilePicturePreview} width={200} height={200} alt='Profile Picture Preview' />
+                            <Image src={getImgSrc(MediaType.ProfilePicture)} width={200} height={200} alt='Profile Picture Preview' />
                         </div>
                     }
                 </div>
@@ -131,7 +171,7 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
-            <button disabled={isSaving} className='btn w-fit'>{isSaving ? "Saving..." : "Save Changes"}</button>
+            <button onClick={saveSettings} disabled={isSaving} className='btn w-fit'>{isSaving ? "Saving..." : "Save Changes"}</button>
         </div>
     )
 }

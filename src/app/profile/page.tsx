@@ -45,7 +45,7 @@ function SidebarLink({ location, children }: { location: ParamLocation, children
     }
 
     return (
-        <div onClick={() => changeParams(location)} className='w-full cursor-pointer'>
+        <div onClick={() => changeParams(location)} className='w-full cursor-pointer hover:text-primary'>
             <h3 className='my-2 flex flex-row gap-2'>
                 {children}
             </h3>
@@ -54,16 +54,16 @@ function SidebarLink({ location, children }: { location: ParamLocation, children
     )
 }
 export default function page() {
-    const sidebarWidth = "15%"
+    const sidebarWidth = "12%"
     return (
         <div className='flex flex-row'>
-            <div className={`h-[100vh] p-4 w-[${sidebarWidth}] fixed flex flex-row`}>
-                <div>
+            <div className={`h-[100vh] p-4 fixed flex flex-row`} style={{width: `${sidebarWidth}`}}>
+                <div className='w-full'>
                     <SidebarLink location={ParamLocation.Profile}><IoPerson /><p>Profile</p></SidebarLink>
                     <SidebarLink location={ParamLocation.Videos}><FaVideo /><p>Videos</p></SidebarLink>
                 </div>
                 <div className='grow' />
-                <hr className='w-[2px] h-full bg-white'/>
+                <hr className='w-[2px] h-full bg-white m-4'/>
             </div>
             <div className={`w-full h-fit m-4`} style={{marginLeft: `calc(${sidebarWidth} + 2em)`}}>
                 {getMainPage()}

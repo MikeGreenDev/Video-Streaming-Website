@@ -6,8 +6,7 @@ import prisma from '@/lib/prismadb'
 import { MediaType } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
-
-const UPLOAD_DIR = path.resolve(process.env.UPLOAD_PATH ?? "", "public/uploads/")
+import { UPLOAD_DIR } from "@/lib/utility";
 
 export async function POST(req: NextRequest) {
     const data = await req.formData();

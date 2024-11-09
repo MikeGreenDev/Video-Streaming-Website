@@ -2,18 +2,26 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from 'react'
 import Link from "next/link";
-import { UserRole } from "@prisma/client";
+import { Media, UserRole } from "@prisma/client";
+import { useSession } from "next-auth/react";
+import { getImageSrcFromPath } from "@/lib/utility";
 
 type ProfileBtnProps = {
     userRole: UserRole
 }
 
 export function ProfileBtn(props: ProfileBtnProps) {
+    const { data: session } = useSession();
     const items: IMenuItem[] = [
         {
-            id: "profile",
-            label: "profile",
-            url: "profile",
+            id: "Profile",
+            label: "Profile",
+            url: "/profile?l=Profile",
+        },
+        {
+            id: "UploadVideo",
+            label: "Upload Video",
+            url: "/upload"
         }
     ]
 
@@ -40,45 +48,41 @@ export function ProfileBtn(props: ProfileBtnProps) {
 
     return (
         <div ref={ref} className="w-fit">
-            <button
-                onClick={toggle}>
+            <button onClick={toggle} className="rounded-full overflow-hidden">
                 <Image
-                    src="/logoipsum-298.svg"
+                    src={getImageSrcFromPath((session?.user.profilePicture as Media).src) || ""}
                     alt="Profile Picture"
-                    width={0}
-                    height={0}
-                    className="relative w-full h-8"
+                    width={100}
+                    height={100}
+                    className="relative w-full h-10"
                 />
             </button>
 
             <div className="relative">
                 {isOpen &&
-                    <div>
+                    <div className="w-full text-nowrap">
                         <ul className="hidden md:flex flex-col gap-x-6 text-white absolute p-4 rounded bg-[rgb(11,10,25)]">
                             {props.userRole === "Admin" &&
                                 <>
-                                    <li className="m-2">
-                                        <Link href="/admin-dashboard">
+                                    <Link href="/admin-dashboard" className="hover:text-primary">
+                                        <li className="m-2">
                                             <p>Dashboard</p>
-                                        </Link>
-                                    </li>
+                                        </li>
+                                    </Link>
                                 </>
                             }
                             {items?.map((item, index) => (
-                                <li key={index} className="m-2">
-                                    <Link href={item.url}>
+                                <Link href={item.url} className="hover:text-primary">
+                                    <li key={index} className="m-2">
                                         <p>{item.label}</p>
-                                    </Link>
-                                </li>
-                            ))}
-                            <li className="m-2">
-                                <Link href="/upload">
-                                    <p>Upload Video</p>
+                                    </li>
                                 </Link>
-                            </li>
-                            <li className="m-2">
-                                <Link href="/api/auth/signout">Log Out</Link>
-                            </li>
+                            ))}
+                            <Link href="/api/auth/signout" className="hover:text-primary">
+                                <li className="m-2">
+                                    <p>Log Out</p>
+                                </li>
+                            </Link>
                         </ul>
                     </div>
                 }

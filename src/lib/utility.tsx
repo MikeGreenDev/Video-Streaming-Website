@@ -1,3 +1,7 @@
+import path from "path";
+
+export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_PATH ?? "", "public/uploads/")
+
 export const getCurURL = () => {
     if (process.env.NODE_ENV == 'production'){
         return process.env.PUBLIC_URL;
