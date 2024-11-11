@@ -66,7 +66,7 @@ export function ProfileBtn(props: ProfileBtnProps) {
             <div className="relative">
                 {isOpen &&
                     <div className="w-full text-nowrap">
-                        <ul className="hidden md:flex flex-col gap-x-6 text-white absolute p-4 rounded bg-[rgb(11,10,25)]">
+                        <ul className="hidden md:flex flex-col gap-x-6 text-white absolute p-4 rounded bg-[rgb(11,10,25)] right-0">
                             {props.userRole === "Admin" &&
                                 <>
                                     <Link href="/admin-dashboard" className="hover:text-primary">
@@ -77,7 +77,7 @@ export function ProfileBtn(props: ProfileBtnProps) {
                                 </>
                             }
                             {items?.map((item, index) => (
-                                <Link href={item.url} className="hover:text-primary">
+                                <Link key={`ProfileBtnLink-${index}`} href={item.url} className="hover:text-primary">
                                     <li key={index} className="m-2">
                                         <p>{item.label}</p>
                                     </li>
