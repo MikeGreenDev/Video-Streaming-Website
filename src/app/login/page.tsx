@@ -56,7 +56,7 @@ export default function page() {
                 </div>
                 <div className='flex flex-col justify-center h-fit w-[350px] mx-auto gap-2'>
                     <Input placeholder='Email' id='email' type="email" name='email' onChange={handleChange} value={state.email} />
-                    <Input placeholder='Password' id='password' type="password" name='password' onChange={handleChange} value={state.password} />
+                    <Input placeholder='Password' id='password' type="password" name='password' onChange={handleChange} value={state.password} autoComplete='current-password'/>
                     <button className='border-2 rounded-2xl border-black w-min m-auto px-4 py-2 mt-4' type='submit'>Submit</button>
                 </div>
                 {err &&
