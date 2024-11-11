@@ -18,6 +18,7 @@ model User {
     id String @id @default(uuid())
     email String @unique @db.VarChar(255)
     username String @unique @db.VarChar(255)
+    displayName String @db.VarChar(255)
     passwordHash String @db.VarChar(255)
     role UserRole @default(User)
     videos Video[] @relation("Uploader")
