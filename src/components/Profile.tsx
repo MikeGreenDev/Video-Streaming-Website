@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { FaX } from 'react-icons/fa6';
 import axios, { AxiosRequestConfig } from 'axios';
 import { getImageSrcFromPath } from '@/lib/utility';
+import useUserProfilePicture from '@/hooks/useUserProfilePicture';
+import useUserHeader from '@/hooks/useUserHeader';
 
 type SettingsState = {
     username: string;
@@ -64,14 +66,16 @@ function reducer(state: SettingsState, action: Action): SettingsState {
 
 export default function Profile() {
     const { data: session, update } = useSession();
+    const profilePicture = useUserProfilePicture();
+    const header = useUserHeader();
     const [isSaving, setIsSaving] = useState<boolean>(false)
     const initSettingsState: SettingsState = {
         username: session?.user.username || "",
         password: "",
         email: session?.user.email || "",
-        profilePicture: session?.user.profilePicture as Media || null,
+        profilePicture: profilePicture || null,
         profilePicturePreview: "",
-        header: session?.user.header as Media || null,
+        header: header || null,
         headerPreview: "",
     }
     const [settingsState, dispatchSettings] = useReducer<Reducer<SettingsState, Action>>(reducer, initSettingsState)

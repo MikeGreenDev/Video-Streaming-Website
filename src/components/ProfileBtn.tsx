@@ -3,15 +3,16 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from 'react'
 import Link from "next/link";
 import { Media, UserRole } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { getImageSrcFromPath } from "@/lib/utility";
+import useUserProfilePicture from "@/hooks/useUserProfilePicture";
+import { IoPersonSharp } from "react-icons/io5";
 
 type ProfileBtnProps = {
     userRole: UserRole
 }
 
 export function ProfileBtn(props: ProfileBtnProps) {
-    const { data: session } = useSession();
+    const profilePicture = useUserProfilePicture();
     const items: IMenuItem[] = [
         {
             id: "Profile",
@@ -49,13 +50,17 @@ export function ProfileBtn(props: ProfileBtnProps) {
     return (
         <div ref={ref} className="w-fit">
             <button onClick={toggle} className="rounded-full overflow-hidden">
+                {profilePicture ?
                 <Image
-                    src={getImageSrcFromPath((session?.user.profilePicture as Media).src) || ""}
+                    src={getImageSrcFromPath(profilePicture?.src || "") || ""}
                     alt="Profile Picture"
                     width={100}
                     height={100}
                     className="relative w-full h-10"
                 />
+                :
+                    <IoPersonSharp />
+                }
             </button>
 
             <div className="relative">

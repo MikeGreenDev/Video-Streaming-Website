@@ -9,8 +9,8 @@ export default async function Home() {
     console.log(videos)
     return (
         <div className="flex flex-wrap gap-6 justify-center">
-            {videos.map((v: Video) => (
-                <VideoCard link={"/video?v=" + v.id} title={v.title} thumbnail={JSON.parse(v.thumbnail as string)?.src} />
+            {videos.map((v: Video, i: number) => (
+                <VideoCard key={`VideoCard-${i}`} link={"/video?v=" + v.id} title={v.title} thumbnail={JSON.parse(v.thumbnail as string)?.src} />
             ))}
         </div>
     );

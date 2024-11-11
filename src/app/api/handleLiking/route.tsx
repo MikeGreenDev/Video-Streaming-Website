@@ -27,13 +27,21 @@ export async function POST(req: NextRequest) {
             da.dislikes = { disconnect: { id: session?.user.id } }
         }
 
-        await prisma.video.update({
+        const vid = await prisma.video.update({
             where: {
                 id: d.videoID
             },
-            data: da
+            data: da,
+            select: {
+                _count: {
+                    select: {
+                        likes: true,
+                        dislikes: true
+                    },
+                }
+            }
         })
-        return NextResponse.json({ success: true }, { status: 200 });
+        return NextResponse.json({ success: true, counts: {likes: vid._count.likes, dislikes: vid._count.dislikes} }, { status: 200 });
     } catch (e) {
         return NextResponse.json({ error: e }, { status: 409 });
     }

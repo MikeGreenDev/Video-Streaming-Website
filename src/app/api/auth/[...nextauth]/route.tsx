@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt"
-import NextAuth, { AuthOptions, getServerSession } from "next-auth";
+import NextAuth, { AuthOptions, getServerSession, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma from "@/lib/prismadb"
+import { cookies } from "next/headers";
+import { createAccessToken } from "@/lib/jwt";
 
 export const authOptions: AuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -20,8 +22,7 @@ export const authOptions: AuthOptions = {
 
                 const user = await prisma.user.findUnique({
                     omit: {passwordHash: false},
-                    where: { email: credentials.email },
-                    include: { subscribers: true, subscribedTo: true }
+                    where: { email: credentials.email }
                 });
 
                 if (!user || !user?.passwordHash) {
@@ -34,8 +35,22 @@ export const authOptions: AuthOptions = {
                     throw new Error("Invalid credentials");
                 }
 
-                user.passwordHash = "";
-                return user;
+                cookies().set({
+                    name: 'refresh-token',
+                    value: cookies().get('refresh-token')?.value || "",
+                    httpOnly: true,
+                    sameSite: 'strict',
+                    secure: true
+                })
+                const at = createAccessToken(user)
+                const retUser: User = {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    accessToken: at,
+                    role: user.role
+                }
+                return retUser;
             }
         })
     ],
@@ -43,28 +58,31 @@ export const authOptions: AuthOptions = {
         signIn: "/login"
     },
     callbacks: {
-        async jwt({ token, trigger, user }) {
-            if (user) {
-                user.passwordHash = "";
-                token.user = user as any
+        async jwt({ token, user, account }) {
+            if (user && account) {
+                token.id = user.id
+                token.accessToken = user.accessToken
+                token.email = user.email
+                token.username = user.username
+                    token.role= user.role
             }
-            if (trigger === 'update') {
-                console.log("Updating")
-                const sessuser = await getServerSession(authOptions);
-                let newUser = await prisma.user.findUnique({
-                    where: { email: sessuser?.user.email },
-                    include: { subscribers: true, subscribedTo: true },
-                });
 
-                token.user = newUser;
-            }
-            console.log("JWT Callback", { token, user });
+            console.log("JWT Callback", { token, user, account });
             return token;
         },
         async session({ session, token }) {
-            if (session?.user) session.user = token.user as any
-            console.log("Session Callback", { session, token });
-            return session
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    id: token.id as string,
+                    email: token.email as string,
+                    username: token.username,
+                    accessToken: token.accessToken as string,
+                    role: token.role
+                },
+                error: ""
+            }
         },
     },
     debug: process.env.NODE_ENV !== "production",

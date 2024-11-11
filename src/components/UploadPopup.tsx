@@ -61,13 +61,12 @@ function reducer(state: UploadMediaState, action: Action): UploadMediaState {
 type UploadPopupProps = {
     fadeBg?: boolean
     closeBtn?: Dispatch<SetStateAction<boolean>> | (() => void)
-    fileProgressCallback?: (progress: number, remaining: number) => void
+    fileProgressCallback?: (videoID: string, progress: number, remaining: number) => void
     videoInfoCallback?: (videoID: string) => void
 }
 
 export default function UploadPopup(props: UploadPopupProps) {
-    const { data: session } = useSession();
-    console.log(session)
+    const { data: session, update } = useSession();
     const acceptedFileTypes = 'video/*'
     const initMediaState: UploadMediaState = {
         title: "",
@@ -114,6 +113,7 @@ export default function UploadPopup(props: UploadPopupProps) {
             const r = await axios.post("/api/createVideo", vid, opts)
             console.log(r.data)
             videoID = r.data.videoID;
+            update()
         } catch (e: any) {
             console.error(e);
             return
@@ -140,7 +140,7 @@ export default function UploadPopup(props: UploadPopupProps) {
                         const timeElapsed = Date.now() - startAt;
                         const uploadSpeed = loaded / timeElapsed;
                         const duration = (total - loaded) / uploadSpeed;
-                        props.fileProgressCallback(+percentage.toFixed(2), duration);
+                        props.fileProgressCallback(videoID, +percentage.toFixed(2), duration);
                     }
                 },
             }
@@ -172,7 +172,7 @@ export default function UploadPopup(props: UploadPopupProps) {
                         const timeElapsed = Date.now() - startAt;
                         const uploadSpeed = loaded / timeElapsed;
                         const duration = (total - loaded) / uploadSpeed;
-                        props.fileProgressCallback(+percentage.toFixed(2), duration);
+                        props.fileProgressCallback(videoID, +percentage.toFixed(2), duration);
                     }
                 },
             }
@@ -190,7 +190,7 @@ export default function UploadPopup(props: UploadPopupProps) {
     }
 
     return (
-        <div className='fixed w-full h-full my-8 [&_h3]:text-lg [&_h3]:underline [&_h3]:font-semibold [&_h3]:m-0'>
+        <div className='fixed w-[100vw] h-[100vh] my-8 right-0 [&_h3]:text-lg [&_h3]:underline [&_h3]:font-semibold [&_h3]:m-0'>
             {props.fadeBg &&
                 <div className='w-[100vw] h-[100vh] bg-black/50'></div>
             }

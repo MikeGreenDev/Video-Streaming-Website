@@ -1,8 +1,8 @@
 "use client"
 import VideoPlayer from '@/containers/VideoPlayer/VideoPlayer'
-import { Prisma, Video } from '@prisma/client';
+import { getImageSrcFromPath } from '@/lib/utility';
+import { Media, Prisma, User } from '@prisma/client';
 import axios, { AxiosRequestConfig } from 'axios';
-import { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation'
@@ -26,24 +26,26 @@ export default function VideoPlayerContainer() {
     const timeSkip = searchParams.get("t") || "";
 
     useEffect(() => {
-        axios.get<VideoResponse>(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
-            setVideo(res.data.video)
-            axios.get(`/api/getPublicUser?userID=${res.data.video.uploaderID}`).then((res) => {
-                setVideoUploader(res.data.publicUser);
+        const getVideoEntry = async () => {
+            await axios.get<VideoResponse>(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
+                setVideo(res.data.video)
+                getUploaderInfo(res.data.video.uploaderID);
                 seeIfSubscribed();
             })
-        })
+        }
+        getVideoEntry()
     }, [])
 
-    useEffect(() => {
-        seeIfSubscribed()
-    }, [session])
+    const getUploaderInfo = async (uploaderID: string) => {
+        console.log("VidUpID: ", uploaderID)
+        axios.get(`/api/getPublicUser?userID=${uploaderID}`).then((res) => {
+            setVideoUploader(res.data.publicUser);
+        })
+    }
 
-    const seeIfSubscribed = () => {
-        const subTo: Omit<User, 'subscribers' | 'subscribedTo'>[] = session?.user.subscribedTo || [];
-        console.log("Session: ", session)
-        console.log("User: ", session?.user)
-        console.log(subTo)
+    const seeIfSubscribed = async () => {
+        const res = await axios.get("/api/getUserSubscribedTo");
+        const subTo: User[] = res.data.subscribedTo
         let found = false;
         if (subTo) {
             subTo.map((v) => {
@@ -70,6 +72,8 @@ export default function VideoPlayerContainer() {
         }
         axios.post("/api/handleSubscribing", d, opts).then(() => {
             update()
+            getUploaderInfo(video?.uploaderID || "");
+            seeIfSubscribed();
         })
     }
 
@@ -82,7 +86,8 @@ export default function VideoPlayerContainer() {
         let opts: AxiosRequestConfig = {
             headers: { "Content-Type": "application/json" },
         }
-        axios.post("/api/handleLiking", d, opts).then(() => {
+        axios.post("/api/handleLiking", d, opts).then((res) => {
+            // TODO: Do I need to re-fetch this?
             axios.get<VideoResponse>(`/api/getVideoEntry?videoID=${videoID}`).then((res) => {
                 setVideo(res.data.video)
             })
@@ -101,10 +106,10 @@ export default function VideoPlayerContainer() {
                         <div className={`my-auto h-full w-[3em] aspect-square rounded-lg overflow-hidden ${!videoUploader?.profilePicture && "bg-slate-500"}`}>
                             {videoUploader && videoUploader.profilePicture ?
                                 <Image
-                                    src={JSON.parse(videoUploader.profilePicture as string).src}
+                                    src={getImageSrcFromPath((videoUploader.profilePicture as Media).src)}
                                     alt="Profile Picture"
-                                    width={0}
-                                    height={0}
+                                    width={1000}
+                                    height={1000}
                                     className="relative w-full h-auto"
                                 />
                                 :
