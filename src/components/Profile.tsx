@@ -12,6 +12,7 @@ import useUserHeader from '@/hooks/useUserHeader';
 
 type SettingsState = {
     username: string;
+    displayName: string;
     password: string;
     email: string;
     profilePicture: File | Media | null;
@@ -24,12 +25,16 @@ type Action = {
     type: string
     arg: number | string | File | null
 }
-
 function reducer(state: SettingsState, action: Action): SettingsState {
     switch (action.type) {
         case "CHANGE_USERNAME":
             if (typeof action.arg === "string") {
                 return { ...state, username: action.arg }
+            }
+            break;
+        case "CHANGE_DISPLAY_NAME":
+            if (typeof action.arg === "string") {
+                return { ...state, displayName: action.arg }
             }
             break;
         case "CHANGE_PASSWORD":
@@ -71,6 +76,7 @@ export default function Profile() {
     const [isSaving, setIsSaving] = useState<boolean>(false)
     const initSettingsState: SettingsState = {
         username: session?.user.username || "",
+        displayName: session?.user.displayName || "",
         password: "",
         email: session?.user.email || "",
         profilePicture: profilePicture || null,
@@ -104,6 +110,7 @@ export default function Profile() {
         setIsSaving(true)
         const fd = new FormData();
         fd.append('username', settingsState.username);
+        fd.append('displayName', settingsState.displayName)
         fd.append('email', settingsState.email);
         fd.append('profilePicture', settingsState.profilePicture as File);
         fd.append('header', settingsState.header as File);
@@ -161,6 +168,12 @@ export default function Profile() {
                     }
                 </div>
                 <div className='flex flex-col gap-4'>
+                    <div>
+                        <label htmlFor='DisplayName'>Display Name</label>
+                        <input type="text" name="DisplayName" id="DisplayName" placeholder='Display Name' autoComplete='off'
+                            value={settingsState.username} onChange={(e) => dispatchSettings({ type: "CHANGE_DISPLAY_NAME", arg: e.currentTarget.value })}
+                            className={`text-black w-full rounded-sm font-light bg-white border-2 outline-none transition disabled:opacity-70 disabled:cursor-not-allowed p-2`} />
+                    </div>
                     <div>
                         <label htmlFor='Username'>Username</label>
                         <input type="text" name="Username" id="Username" placeholder='Username' autoComplete='off'

@@ -117,7 +117,7 @@ export default function VideoPlayerContainer() {
                             }
                         </div>
                         <div className='h-auto my-auto'>
-                            <h3 className='my-0'>{videoUploader?.username}</h3>
+                            <h3 className='my-0'>{videoUploader?.displayName}</h3>
                             <p>{videoUploader?.subCnt} Subscribers</p>
                         </div>
                         <div className='h-auto my-auto'>

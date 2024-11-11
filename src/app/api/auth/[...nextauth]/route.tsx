@@ -21,7 +21,7 @@ export const authOptions: AuthOptions = {
                 }
 
                 const user = await prisma.user.findUnique({
-                    omit: {passwordHash: false},
+                    omit: { passwordHash: false },
                     where: { email: credentials.email }
                 });
 
@@ -46,6 +46,7 @@ export const authOptions: AuthOptions = {
                 const retUser: User = {
                     id: user.id,
                     username: user.username,
+                    displayName: user.displayName,
                     email: user.email,
                     accessToken: at,
                     role: user.role
@@ -64,7 +65,8 @@ export const authOptions: AuthOptions = {
                 token.accessToken = user.accessToken
                 token.email = user.email
                 token.username = user.username
-                    token.role= user.role
+                token.displayName = user.displayName
+                token.role = user.role
             }
 
             console.log("JWT Callback", { token, user, account });
@@ -78,6 +80,7 @@ export const authOptions: AuthOptions = {
                     id: token.id as string,
                     email: token.email as string,
                     username: token.username,
+                    displayName: token.displayName,
                     accessToken: token.accessToken as string,
                     role: token.role
                 },

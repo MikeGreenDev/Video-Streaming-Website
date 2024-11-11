@@ -62,14 +62,17 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
     const d = await req.formData()
     const fdUsername = d.get('username') as string || ""
+    const fdDisplayName = d.get('displayName') as string || ""
     const fdEmail = d.get('email') as string || ""
     const fdProfilePicture = d.get('profilePicture') as File
     const fdHeader = d.get('header') as File
-    console.log(d);
     let ud: Partial<User> = {}
 
     if (fdUsername) {
         ud.username = fdUsername;
+    }
+    if (fdDisplayName) {
+        ud.displayName = fdDisplayName;
     }
     if (fdEmail) {
         ud.email = fdEmail;
@@ -78,7 +81,6 @@ export async function POST(req: NextRequest) {
     // Profile Picture
     await uploadFile(fdProfilePicture, MediaType.ProfilePicture, session.user.id).then((mr) => {
         ud.profilePicture = mr
-        console.log("UDPP: ", ud)
     }).catch((e) => {
         return NextResponse.json({ error: e }, { status: 409 });
     })
@@ -86,12 +88,9 @@ export async function POST(req: NextRequest) {
     // Header
     await uploadFile(fdHeader, MediaType.Header, session.user.id).then((mr) => {
         ud.header = mr
-        console.log("UDHE: ", ud)
     }).catch((e) => {
         return NextResponse.json({ error: e }, { status: 409 });
     })
-
-    console.log("UDFINAL: ", ud)
 
     try {
         const r = await prisma.user.update({
