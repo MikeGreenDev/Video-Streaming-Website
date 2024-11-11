@@ -38,6 +38,7 @@ model Video {
     id String @id @default(uuid())
     title String
     description String
+    uploadedOn Date @default(now())
     uploader User @relation("Uploader", fields: [uploaderID], references: [id])
     uploaderID String // UserID
     tags String

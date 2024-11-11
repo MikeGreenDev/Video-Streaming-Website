@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
     const d = await req.json()
     try {
-        let mediaIDs = [d.media.id, d.thumbnail.id]
+        let mediaIDs = [JSON.parse(d.media).id, JSON.parse(d.thumbnail).id]
         await prisma.media.deleteMany({
             where: {
                 id: {

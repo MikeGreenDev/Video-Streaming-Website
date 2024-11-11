@@ -57,13 +57,11 @@ export const VideoUploadList = () => {
                 t[videoID].progress = progress
                 t[videoID].remaining = remaining
                 setVideoUploading(t);
-                console.log(JSON.stringify(t))
                 return
             } else {
                 let t = videoUploading
                 t[videoID] = { id: videoID, progress: progress, remaining: remaining }
                 setVideoUploading(t);
-                console.log(JSON.stringify(t))
                 return
             }
         } else {
@@ -71,7 +69,6 @@ export const VideoUploadList = () => {
                 let t = videoUploading
                 delete t[videoID]
                 setVideoUploading(t);
-                console.log(JSON.stringify(t))
             }
         }
     }
