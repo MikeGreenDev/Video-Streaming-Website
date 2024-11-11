@@ -6,13 +6,11 @@ import Link from 'next/link'
 import Input from '@/lib/Input'
 
 interface InitialStateProps {
-    name: string,
     email: string,
     password: string
 }
 
 const initialState: InitialStateProps = {
-    name: '',
     email: '',
     password: ''
 }
@@ -25,9 +23,11 @@ export default function page() {
 
     const onSubmit = async (event: FormEvent) => {
         event.preventDefault()
+        let s = state
+        s.email = s.email.toLowerCase()
 
         await signIn('credentials', {
-            ...state,
+            ...s,
             redirect: false,
         }).then((callback) => {
             let callbackUrl = searchParams.get('callbackUrl')

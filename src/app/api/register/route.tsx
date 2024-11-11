@@ -8,7 +8,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     let { email, username, password }: {email: string, username: string, password: string} = body;
     email = email.toLowerCase();
-    username = username.toLowerCase();
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -16,7 +15,7 @@ export async function POST(request: Request) {
         const user = await prisma.user.create({
             data: {
                 email,
-                username,
+                username: username.toLowerCase(),
                 displayName: username,
                 passwordHash: hashedPassword,
             },

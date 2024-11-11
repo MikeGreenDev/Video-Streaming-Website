@@ -41,8 +41,6 @@ export default function page() {
                 }, 2500)
             })
             .catch((err: any) => {
-                console.log(err);
-                console.log(err.response.data.error)
                 setError(err.response.data.error || "Unknown Error")
             })
             .finally(() => {
@@ -51,7 +49,6 @@ export default function page() {
 
     function handleChange(event: any) {
         setState({ ...state, [event.target.name]: event.target.value });
-        console.log(event.target.value)
     }
 
     return (
@@ -59,7 +56,7 @@ export default function page() {
             <h1 className='text-left text-3xl mt-[2rem] font-bold'>Register</h1>
             <div className='flex flex-col justify-center w-[20rem] mx-auto mt-[.5rem] mb-[1rem] gap-2'>
                 <Input placeholder='Username' id='username' type='text' name='username' onChange={handleChange} value={state.username} autoComplete='off'/>
-                <Input placeholder='Email' id='email' type='email' name='email' onChange={handleChange} value={state.email} autoComplete='email webauthn'/>
+                <Input placeholder='Email' id='email' type='email' name='email' onChange={handleChange} value={state.email} autoComplete='username'/>
                 <Input placeholder='Password' id='password' type='password' name='password' onChange={handleChange} value={state.password} autoComplete='new-password'/>
                 <button className='border-2 rounded-2xl border-black w-min m-auto px-4 py-2' type='submit'>Submit</button>
             </div>

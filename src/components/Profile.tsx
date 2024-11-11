@@ -171,7 +171,7 @@ export default function Profile() {
                     <div>
                         <label htmlFor='DisplayName'>Display Name</label>
                         <input type="text" name="DisplayName" id="DisplayName" placeholder='Display Name' autoComplete='off'
-                            value={settingsState.username} onChange={(e) => dispatchSettings({ type: "CHANGE_DISPLAY_NAME", arg: e.currentTarget.value })}
+                            value={settingsState.displayName} onChange={(e) => dispatchSettings({ type: "CHANGE_DISPLAY_NAME", arg: e.currentTarget.value })}
                             className={`text-black w-full rounded-sm font-light bg-white border-2 outline-none transition disabled:opacity-70 disabled:cursor-not-allowed p-2`} />
                     </div>
                     <div>
