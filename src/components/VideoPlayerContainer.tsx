@@ -5,6 +5,7 @@ import { Media, Prisma, User } from '@prisma/client';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6';
@@ -117,7 +118,7 @@ export default function VideoPlayerContainer() {
                             }
                         </div>
                         <div className='h-auto my-auto'>
-                            <h3 className='my-0'>{videoUploader?.displayName}</h3>
+                            <Link className='hover:text-primary' href={`/${videoUploader?.username}`}><h3 className='my-0'>{videoUploader?.displayName}</h3></Link>
                             <p>{videoUploader?.subCnt} Subscribers</p>
                         </div>
                         <div className='h-auto my-auto'>
@@ -125,9 +126,9 @@ export default function VideoPlayerContainer() {
                         </div>
                         <div className='grow' />
                         <div className='p-4 bg-backgroundHL rounded-lg flex flex-row gap-2'>
-                            <button onClick={() => handleLikeDisLike({ like: !isLiked, dislike: false })} className='flex flex-row gap-2'><FaThumbsUp />{video?.likes.length}</button>
+                            <button onClick={() => handleLikeDisLike({ like: !isLiked, dislike: false })} className={`flex flex-row gap-2 ${isLiked && "text-primary"}`}><FaThumbsUp />{video?.likes.length}</button>
                             <div className='w-[2px] h-full bg-white rounded-lg' />
-                            <button onClick={() => handleLikeDisLike({ like: false, dislike: !isDisliked })} className='flex flex-row gap-2'><FaThumbsDown />{video?.dislikes.length}</button>
+                            <button onClick={() => handleLikeDisLike({ like: false, dislike: !isDisliked })} className={`flex flex-row gap-2 ${isDisliked && "text-primary"}`}><FaThumbsDown />{video?.dislikes.length}</button>
                         </div>
                     </div>
                     <div className='my-2 bg-backgroundHL p-4 rounded-lg'>
