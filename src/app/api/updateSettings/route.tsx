@@ -1,61 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "fs";
 import prisma from '@/lib/prismadb'
-import { v4 as uuidV4 } from 'uuid'
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { Media, MediaType, User } from "@prisma/client";
-import { UPLOAD_DIR } from "@/lib/utility";
-import path from "path";
-
-const uploadFile = async (file: File, type: MediaType, userID: string): Promise<Media> => {
-    let buffer: NodeJS.ArrayBufferView | string = "";
-    if (file) {
-        try {
-            if (file.arrayBuffer) {
-                buffer = Buffer.from(await file.arrayBuffer());
-            }
-            if (!fs.existsSync(UPLOAD_DIR)) {
-                fs.mkdirSync(UPLOAD_DIR)
-            }
-        } catch (e: any) {
-            return Promise.reject(e)
-        }
-        console.log("File: ", file)
-        let name = file.name.replaceAll(" ", "_")
-        // Get the file extension
-        let ext = name.split('.').filter(Boolean).slice(1).join('.');
-        console.log(name)
-        // Trim filename if needed
-        if (name.length > 200) {
-            name = name.slice(0, -33);
-        }
-        name = name.replaceAll('.', '');
-        // Make the filename unique
-        name = name + "_" + uuidV4() + "." + ext;
-        console.log("Name: ", name)
-        let filename = path.resolve(UPLOAD_DIR, name);
-        try {
-            fs.writeFileSync(
-                filename,
-                buffer
-            )
-        } catch (e: any) {
-            return Promise.reject(e)
-        }
-
-        const mr = await prisma.media.create({
-            data: {
-                userID: userID,
-                src: filename,
-                type: type,
-            }
-        })
-
-        return Promise.resolve(mr)
-    }
-    return Promise.reject("File not given")
-}
+import { uploadFile } from "@/lib/uploadFileHelper";
+import { JsonValue } from "@prisma/client/runtime/library";
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
@@ -78,19 +27,56 @@ export async function POST(req: NextRequest) {
         ud.email = fdEmail;
     }
 
-    // Profile Picture
-    await uploadFile(fdProfilePicture, MediaType.ProfilePicture, session.user.id).then((mr) => {
-        ud.profilePicture = mr
-    }).catch((e) => {
-        return NextResponse.json({ error: e }, { status: 409 });
-    })
+    let userPics: JsonValue | null = null;
 
-    // Header
-    await uploadFile(fdHeader, MediaType.Header, session.user.id).then((mr) => {
-        ud.header = mr
-    }).catch((e) => {
+    // Get the user's info, to get the old profilePicture & header
+    try {
+        userPics = await prisma.user.findUnique({
+            where: {
+                id: session.user.id
+            },
+            select: {
+                profilePicture: fdProfilePicture !== null,
+                header: fdHeader !== null,
+            }
+        })
+    }catch(e: any){
         return NextResponse.json({ error: e }, { status: 409 });
-    })
+    }
+
+    if (!userPics){
+        return NextResponse.json({ error: "Could not get user pictures." }, { status: 409 });
+    }
+
+    if (fdProfilePicture) {
+        // Profile Picture
+        await uploadFile(fdProfilePicture, MediaType.ProfilePicture, session.user.id).then(async (mr) => {
+            ud.profilePicture = mr
+            // Delete the old pic
+            await prisma.media.delete({
+                where: {
+                    id: JSON.parse(userPics.profilePicture as string).id
+                }
+            })
+        }).catch((e: any) => {
+            return NextResponse.json({ error: e }, { status: 409 });
+        })
+    }
+
+    if (fdHeader) {
+        // Header
+        await uploadFile(fdHeader, MediaType.Header, session.user.id).then(async (mr) => {
+            ud.header = mr
+            // Delete the old pic
+            await prisma.media.delete({
+                where: {
+                    id: JSON.parse(userPics.header as string).id
+                }
+            })
+        }).catch((e) => {
+            return NextResponse.json({ error: e }, { status: 409 });
+        })
+    }
 
     try {
         const r = await prisma.user.update({
