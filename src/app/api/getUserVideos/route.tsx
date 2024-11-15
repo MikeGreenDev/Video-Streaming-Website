@@ -11,7 +11,12 @@ export async function GET() {
                 id: session?.user.id
             },
             select: {
-                videos: true
+                videos: {
+                    include: {
+                        likes: true,
+                        dislikes: true
+                    }
+                }
             }
         })
         return NextResponse.json({ success: true, videos: user?.videos }, {

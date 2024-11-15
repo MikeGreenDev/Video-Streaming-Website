@@ -1,13 +1,15 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import UploadPopup from './UploadPopup'
-import { Video } from '@prisma/client'
+import { Prisma, Video, Visibility } from '@prisma/client'
 import Image from 'next/image'
-import { getImageSrcFromPath } from '@/lib/utility'
+import { getDateDifferenceInStr, getImageSrcFromPath } from '@/lib/utility'
 import { FiEdit } from 'react-icons/fi'
 import { FaRegTrashAlt } from 'react-icons/fa'
 import axios, { AxiosRequestConfig } from 'axios'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6'
 
 type FileUploadListEntry = {
     id: string
@@ -23,7 +25,7 @@ export const VideoUploadList = () => {
     const { data: session } = useSession()
     const [uploadPopup, setUploadPopup] = useState<boolean>(false)
     const [videoUploading, setVideoUploading] = useState<Dictionary<FileUploadListEntry>>({})
-    const [videos, setVideos] = useState<Video[]>([])
+    const [videos, setVideos] = useState<Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }>[]>([])
     const [video, setVideo] = useState<Video | undefined>(undefined)
 
     const getVideos = async () => {
@@ -80,27 +82,47 @@ export const VideoUploadList = () => {
         }
     }
 
-    const close = (b: boolean) => {
+    const close = () => {
         setUploadPopup(false);
         setVideo(undefined)
+    }
+
+    const updateVisibility = async (video: Video, vis: Visibility) => {
+        await axios.get(`/api/updateVideoVisibility?videoID=${video.id}&visibility=${vis}`).then((r) => {
+            getVideos();
+        }).catch((e) => {
+            throw new Error(e);
+        })
     }
 
     return (
         <div className='m-8'>
             {(uploadPopup || video !== undefined) &&
-                <UploadPopup closeBtn={close} fileProgressCallback={videoFileCallback} video={video}/>
+                <UploadPopup closeBtn={close} fileProgressCallback={videoFileCallback} video={video} />
             }
-            <button className='btn' onClick={() => {setVideo(undefined); setUploadPopup(true)}}>Upload Video</button>
+            <button className='btn' onClick={() => { setVideo(undefined); setUploadPopup(true) }}>Upload Video</button>
             <hr />
             <div className='flex flex-col gap-4 my-4'>
                 {videos.map((v, i) => (
                     <div key={`VideoCard-${i}`} className='flex flex-row gap-4 h-fit'>
                         <Image src={getImageSrcFromPath(JSON.parse(v.thumbnail as string)?.src || "") || ""} alt={v.title} width={200} height={200} style={{ aspectRatio: 16 / 9 }} />
-                        <h3>{v.title}</h3>
+                        <div>
+                            <Link target='_blank' className='hover:text-primary' href={`/video?v=${v.id}`}><h3 className='m-0'>{v.title}</h3></Link>
+                            <p>{getDateDifferenceInStr(v.uploadedOn.toString(), new Date().toISOString())}</p>
+                            <select className='text-white bg-backgroundHL p-2' onChange={(e) => updateVisibility(v, e.currentTarget.value as Visibility)} value={v.visibility}>
+                                {Object.keys(Visibility).map((v) => (
+                                    <option key={`Type-${v}`} className='text-white bg-backgroundHL' value={v}>{v}</option>
+                                ))}
+                            </select>
+                        </div>
                         <div className='grow' />
                         {videoUploading[v.id] !== undefined &&
                             <p className='m-auto'>{videoUploading[v.id].remaining} remaining | {videoUploading[v.id].progress}%</p>
                         }
+                        <div className='m-auto flex flex-row gap-4'>
+                            <FaThumbsUp className='w-full h-full'/><p>{v.likes.length}</p>
+                            <FaThumbsDown className='w-full h-full'/><p>{v.dislikes.length}</p>
+                        </div>
                         <button onClick={() => editVideo(v)} className='m-auto w-[1.5em] h-full hover:text-primary'><FiEdit className='w-full h-full' /></button>
                         <button onClick={() => deleteVideo(v)} className='m-auto w-[1.5em] h-full hover:text-red-500'><FaRegTrashAlt className='w-full h-full' /></button>
                     </div>
