@@ -7,6 +7,7 @@ import { getImageSrcFromPath } from '@/lib/utility'
 import { FiEdit } from 'react-icons/fi'
 import { FaRegTrashAlt } from 'react-icons/fa'
 import axios, { AxiosRequestConfig } from 'axios'
+import { useSession } from 'next-auth/react'
 
 type FileUploadListEntry = {
     id: string
@@ -19,9 +20,11 @@ type Dictionary<T> = {
 }
 
 export const VideoUploadList = () => {
+    const { data: session } = useSession()
     const [uploadPopup, setUploadPopup] = useState<boolean>(false)
     const [videoUploading, setVideoUploading] = useState<Dictionary<FileUploadListEntry>>({})
     const [videos, setVideos] = useState<Video[]>([])
+    const [video, setVideo] = useState<Video | undefined>(undefined)
 
     const getVideos = async () => {
         const r = await axios.get("/api/getUserVideos");
@@ -30,7 +33,7 @@ export const VideoUploadList = () => {
 
     useEffect(() => {
         getVideos();
-    }, [])
+    }, [session])
 
     const deleteVideo = async (video: Video) => {
         let vid = {
@@ -47,6 +50,10 @@ export const VideoUploadList = () => {
         }).catch((e) => {
             throw new Error(e);
         })
+    }
+
+    const editVideo = async (video: Video) => {
+        setVideo(video)
     }
 
     const videoFileCallback = (videoID: string, progress: number, remaining: number) => {
@@ -73,12 +80,17 @@ export const VideoUploadList = () => {
         }
     }
 
+    const close = (b: boolean) => {
+        setUploadPopup(false);
+        setVideo(undefined)
+    }
+
     return (
         <div className='m-8'>
-            {uploadPopup &&
-                <UploadPopup closeBtn={setUploadPopup} fileProgressCallback={videoFileCallback} />
+            {(uploadPopup || video !== undefined) &&
+                <UploadPopup closeBtn={close} fileProgressCallback={videoFileCallback} video={video}/>
             }
-            <button className='btn' onClick={() => setUploadPopup(true)}>Upload Video</button>
+            <button className='btn' onClick={() => {setVideo(undefined); setUploadPopup(true)}}>Upload Video</button>
             <hr />
             <div className='flex flex-col gap-4 my-4'>
                 {videos.map((v, i) => (
@@ -86,7 +98,10 @@ export const VideoUploadList = () => {
                         <Image src={getImageSrcFromPath(JSON.parse(v.thumbnail as string)?.src || "") || ""} alt={v.title} width={200} height={200} style={{ aspectRatio: 16 / 9 }} />
                         <h3>{v.title}</h3>
                         <div className='grow' />
-                        <button className='m-auto w-[1.5em] h-full hover:text-primary'><FiEdit className='w-full h-full' /></button>
+                        {videoUploading[v.id] !== undefined &&
+                            <p className='m-auto'>{videoUploading[v.id].remaining} remaining | {videoUploading[v.id].progress}%</p>
+                        }
+                        <button onClick={() => editVideo(v)} className='m-auto w-[1.5em] h-full hover:text-primary'><FiEdit className='w-full h-full' /></button>
                         <button onClick={() => deleteVideo(v)} className='m-auto w-[1.5em] h-full hover:text-red-500'><FaRegTrashAlt className='w-full h-full' /></button>
                     </div>
                 ))}

@@ -5,13 +5,15 @@ import Dropzone from './Dropzone'
 import axios, { AxiosProgressEvent, AxiosRequestConfig } from 'axios'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import { Media, Video } from '@prisma/client'
+import { getImageSrcFromPath } from '@/lib/utility'
 
 type UploadMediaState = {
     title: string
     description: string
     tags: string
     file: File | null
-    thumbnail: File | null
+    thumbnail: File | Media | null
     thumbnailPreview: string
 }
 
@@ -43,6 +45,7 @@ function reducer(state: UploadMediaState, action: Action): UploadMediaState {
             }
             break;
         case "CHANGE_THUMBNAIL":
+            // If the thumbnail is being changed, it should be a File NOT a media type
             if (action.arg instanceof File || action.arg === null) {
                 return { ...state, thumbnail: action.arg }
             }
@@ -59,26 +62,28 @@ function reducer(state: UploadMediaState, action: Action): UploadMediaState {
 }
 
 type UploadPopupProps = {
+    video?: Video
     fadeBg?: boolean
-    closeBtn?: Dispatch<SetStateAction<boolean>> | (() => void)
+    closeBtn?: Dispatch<SetStateAction<boolean>> | ((b: boolean) => void)
     fileProgressCallback?: (videoID: string, progress: number, remaining: number) => void
     videoInfoCallback?: (videoID: string) => void
 }
 
 export default function UploadPopup(props: UploadPopupProps) {
     const { data: session, update } = useSession();
+    const [isUploading, setIsUploading] = useState<boolean>(false)
     const acceptedFileTypes = 'video/*'
+    console.log(props.video)
     const initMediaState: UploadMediaState = {
-        title: "",
-        description: "",
-        tags: "",
+        title: props?.video?.title || "",
+        description: props?.video?.description || "",
+        tags: props?.video?.tags || "",
         file: null,
-        thumbnail: null,
+        thumbnail: props.video?.thumbnail ? JSON.parse(props?.video?.thumbnail as string) : null,
         thumbnailPreview: ""
     }
     const [mediaState, dispatchMedia] = useReducer<Reducer<UploadMediaState, Action>>(reducer, initMediaState)
     const fileCallback = (files: File[]) => {
-        // TODO: File validation
         dispatchMedia({ type: "CHANGE_FILE", arg: files[0] })
     }
 
@@ -98,10 +103,10 @@ export default function UploadPopup(props: UploadPopupProps) {
         }
     }
 
-    const uploadMedia = async (formData: FormData) => {
+    const uploadMedia = async () => {
         let videoID: string | null = null
+        setIsUploading(true)
         try {
-            console.log(session)
             let vid = {
                 title: mediaState.title,
                 description: mediaState.description,
@@ -111,12 +116,10 @@ export default function UploadPopup(props: UploadPopupProps) {
                 headers: { "Content-Type": "application/json" },
             }
             const r = await axios.post("/api/createVideo", vid, opts)
-            console.log(r.data)
             videoID = r.data.videoID;
             update()
         } catch (e: any) {
-            console.error(e);
-            return
+            throw new Error(e)
         }
 
         try {
@@ -125,7 +128,7 @@ export default function UploadPopup(props: UploadPopupProps) {
             if (videoID === null) throw new Error("Video ID in null");
             fd.append("videoID", videoID);
             fd.append("type", "Thumbnail")
-            if (mediaState.thumbnail) {
+            if (mediaState.thumbnail && mediaState.thumbnail instanceof File) {
                 fd.append("files", mediaState.thumbnail);
             }
             let opts: AxiosRequestConfig = {
@@ -144,10 +147,9 @@ export default function UploadPopup(props: UploadPopupProps) {
                     }
                 },
             }
-            const thumbnailData = await axios.post("/api/uploadMedia", fd, opts);
-        }catch(e){
-            console.error(e)
-            return
+            await axios.post("/api/uploadMedia", fd, opts);
+        } catch (e: any) {
+            throw new Error(e)
         }
 
         try {
@@ -181,11 +183,49 @@ export default function UploadPopup(props: UploadPopupProps) {
                 props.videoInfoCallback(videoID)
             }
 
-            const videoData = await axios.post("/api/uploadMedia", fd, opts);
-            console.log(videoData)
+            await axios.post("/api/uploadMedia", fd, opts).then(() => {
+                update()
+                setIsUploading(false)
+                if (props.closeBtn) {
+                    props.closeBtn(false)
+                }
+            });
         } catch (e: any) {
-            console.error(e)
-            return
+            throw new Error(e)
+        }
+    }
+
+    const updateVideo = async () => {
+        setIsUploading(true)
+        try {
+            let vfd = new FormData()
+            if (!props.video) throw new Error("UpdateVideo: No video given.")
+            vfd.append('videoID', props.video.id)
+            vfd.append('thumbnailID', props.video.thumbnail ? JSON.parse(props.video.thumbnail as string).id : null)
+            if (mediaState.title !== props.video.title) {
+                vfd.append('title', mediaState.title)
+            }
+            if (mediaState.description !== props.video.description) {
+                vfd.append('description', mediaState.description)
+            }
+            if (mediaState.tags !== props.video.tags) {
+                vfd.append('tags', mediaState.tags)
+            }
+            if (mediaState.thumbnail instanceof File) {
+                vfd.append('files', mediaState.thumbnail)
+            }
+
+            let opts: AxiosRequestConfig = {
+                headers: { "Content-Type": "multipart/form-data" },
+            }
+            await axios.post("/api/updateVideo", vfd, opts)
+            update()
+            setIsUploading(false)
+            if (props.closeBtn) {
+                props.closeBtn(false)
+            }
+        } catch (e: any) {
+            throw new Error(e)
         }
     }
 
@@ -194,40 +234,51 @@ export default function UploadPopup(props: UploadPopupProps) {
             {props.fadeBg &&
                 <div className='w-[100vw] h-[100vh] bg-black/50'></div>
             }
-            <form action={uploadMedia} className='w-[50%] rounded bg-gray-700 m-auto p-8 py-4 [&_*]:my-2 [&_input]:p-2 [&_input]:rounded-md [&_input]:text-white [&_input]:bg-gray-900 [&_input]:w-full'>
-                <div className='flex flex-row gap-4'>
+            <form action={props.video ? updateVideo : uploadMedia} className='w-[50%] h-fit rounded bg-gray-700 m-auto p-8 py-4 [&_*]:my-2 [&_input]:p-2 [&_input]:rounded-md [&_input]:text-white [&_input]:bg-gray-900 [&_input]:w-full'>
+                <div className='flex flex-row gap-4 h-fit'>
                     <div>
                         <h3>Video Details</h3>
-                        <input type='text' placeholder='Title' name='Title' id='title' onChange={(e) => dispatchMedia({ type: "CHANGE_TITLE", arg: e.currentTarget.value })} />
+                        <input type='text' placeholder='Title' name='Title' id='title' value={mediaState.title} onChange={(e) => dispatchMedia({ type: "CHANGE_TITLE", arg: e.currentTarget.value })} />
 
-                        <textarea className='w-full bg-gray-900 p-2 rounded-md' placeholder='Description' name='Description' id='description' autoComplete='off' onChange={(e) => dispatchMedia({ type: "CHANGE_DESCRIPTION", arg: e.currentTarget.value })} />
+                        <textarea className='w-full bg-gray-900 p-2 rounded-md' placeholder='Description' name='Description' id='description' autoComplete='off'
+                            value={mediaState.description} onChange={(e) => dispatchMedia({ type: "CHANGE_DESCRIPTION", arg: e.currentTarget.value })} />
                         <div className='flex flex-row gap-2 items-center'>
                             <h3>Tags</h3><span className='text-sm text-gray-300 h-fit !m-0'> Seperated by comma</span>
                         </div>
-                        <input type='text' placeholder='Tags' name='Tags' id='tags' onChange={(e) => dispatchMedia({ type: "CHANGE_TAGS", arg: e.currentTarget.value })} />
+                        <input type='text' placeholder='Tags' name='Tags' id='tags' value={mediaState.tags} onChange={(e) => dispatchMedia({ type: "CHANGE_TAGS", arg: e.currentTarget.value })} />
                     </div>
-                    <div className='flex-grow flex flex-col'>
-                        <div>
+                    <div className='flex flex-col'>
+                        <h3>Thumbnail</h3>
+                        <div className='h-fit'>
                             {mediaState.thumbnail === null ?
                                 <Dropzone name="Thumbnail" acceptedFileTypes={"image/*"} fileCallback={thumbnailCallback} />
                                 :
                                 <div className='flex flex-row items-center gap-2'>
-                                    <button onClick={() => dispatchMedia({ type: "CHANGE_THUMBNAIL", arg: null })} className='hover:text-red-500'><FaX /></button>
-                                    <p>{mediaState.thumbnail.name}</p>
-                                    <Image src={mediaState.thumbnailPreview} width={200} height={200} alt='Thumbnail Preview' />
+                                    <button disabled={isUploading} onClick={() => dispatchMedia({ type: "CHANGE_THUMBNAIL", arg: null })} className='hover:text-red-500'><FaX /></button>
+                                    {mediaState.thumbnail instanceof File &&
+                                        <p>{mediaState.thumbnail.name}</p>
+                                    }
+                                    {(mediaState.thumbnailPreview || !(mediaState.thumbnail instanceof File)) &&
+                                        <Image src={mediaState.thumbnailPreview || getImageSrcFromPath((mediaState.thumbnail as Media).src) || ""} width={200} height={200} alt='Thumbnail Preview' />
+                                    }
                                 </div>
                             }
                         </div>
-                        <div>
-                            {mediaState.file === null ?
-                                <Dropzone name="Video" acceptedFileTypes={acceptedFileTypes} fileCallback={fileCallback} />
-                                :
-                                <div className='flex flex-row items-center gap-2'>
-                                    <button onClick={() => dispatchMedia({ type: "CHANGE_FILE", arg: null })} className='hover:text-red-500'><FaX /></button>
-                                    <p>{mediaState.file.name}</p>
+                        {!props.video &&
+                            <div>
+                                <h3>Video</h3>
+                                <div className='h-fit'>
+                                    {mediaState.file === null ?
+                                        <Dropzone name="Video" acceptedFileTypes={acceptedFileTypes} fileCallback={fileCallback} />
+                                        :
+                                        <div className='flex flex-row items-center gap-2'>
+                                            <button disabled={isUploading} onClick={() => dispatchMedia({ type: "CHANGE_FILE", arg: null })} className='hover:text-red-500'><FaX /></button>
+                                            <p>{mediaState.file.name}</p>
+                                        </div>
+                                    }
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
                     </div>
                     <div className='!m-0'>
                         <button className='w-full' onClick={() => closeBtn()}>
@@ -236,7 +287,7 @@ export default function UploadPopup(props: UploadPopupProps) {
                     </div>
                 </div>
                 <div className='flex flex-row-reverse'>
-                    <button type='submit'>Upload</button>
+                    <button disabled={isUploading} type='submit' className='btn'>{isUploading ? "Uploading..." : "Upload"}</button>
                 </div>
             </form>
         </div>

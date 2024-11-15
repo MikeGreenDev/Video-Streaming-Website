@@ -1,6 +1,6 @@
+import { Media, MediaType } from "@prisma/client";
 import path from "path";
 
-export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_PATH ?? "", "public/uploads/")
 
 export const getCurURL = () => {
     if (process.env.NODE_ENV == 'production') {
@@ -48,3 +48,4 @@ export const getDateDifferenceInStr = (ts: string, ts2: string): string => {
     res += ' ago'
     return res;
 }
+

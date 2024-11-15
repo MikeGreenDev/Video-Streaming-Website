@@ -78,7 +78,7 @@
     }
 
     button.btn {
-        @apply p-2 my-2 bg-secondary rounded-lg border-2 border-transparent hover:bg-transparent hover:border-secondary
+        @apply p-2 my-2 bg-secondary rounded-lg border-2 border-transparent hover:bg-transparent hover:border-secondary disabled:bg-gray-300 disabled:cursor-not-allowed
     }
 
     input[type=range] {
