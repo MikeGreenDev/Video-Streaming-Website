@@ -7,14 +7,22 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
     const d = await req.json()
     try {
-        let mediaIDs = [JSON.parse(d.media).id, JSON.parse(d.thumbnail).id]
-        await prisma.media.deleteMany({
-            where: {
-                id: {
-                    in: mediaIDs
+        let mediaIDs = []
+        if (d.media){
+            mediaIDs.push(JSON.parse(d.media).id);
+        }
+        if (d.thumbnail){
+            mediaIDs.push(JSON.parse(d.thumbnail).id);
+        }
+        if (mediaIDs.length > 0){
+            await prisma.media.deleteMany({
+                where: {
+                    id: {
+                        in: mediaIDs
+                    }
                 }
-            }
-        })
+            })
+        }
 
         // TODO: Mark videos to be deleted. Don't actually delete them right away
         await prisma.video.delete({
