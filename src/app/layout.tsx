@@ -22,7 +22,7 @@ export default async function RootLayout({
                 className={`antialiased`}
             >
                 <AuthProvider session={session}>
-                    <Navbar items={[]} />
+                    <Navbar />
                     {children}
                 </AuthProvider>
             </body>

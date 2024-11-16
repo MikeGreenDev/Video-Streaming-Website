@@ -33,7 +33,7 @@ const Logo = () => {
   }, []);
 
   return (
-    <>
+    <div className="h-full w-full m-auto">
       <Link href="/" style={{ display: showButton ? "none" : "block" }}>
         <Image
           src="/logoipsum-297.svg"
@@ -50,7 +50,7 @@ const Logo = () => {
         }}
       >
       </div>
-    </>
+    </div>
   );
 };
 
