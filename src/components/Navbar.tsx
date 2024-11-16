@@ -14,7 +14,7 @@ export default function Navbar({ items }: { items: IMenuItem[] }) {
 
     return (
         <>
-            <div className="w-full h-20 bg-backgroundHL/60 backdrop-blur-sm sticky top-0 z-20"> <div className="mx-auto px-4 h-full">
+            <div className="w-full h-16 bg-backgroundHL/60 backdrop-blur-sm sticky top-0 z-20"> <div className="mx-auto px-4 h-full">
                     <div className="flex justify-between items-center h-full">
                         <div className="h-full w-[2em] m-4">
                             <button className="h-full w-full" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -46,7 +46,7 @@ export default function Navbar({ items }: { items: IMenuItem[] }) {
                             {!session?.user ?
                                 <Login />
                                 :
-                                <ProfileBtn userRole={session.user.role as UserRole} />
+                                <ProfileBtn userRole={session.user.role as UserRole} username={session.user.username}/>
                             }
                         </div>
                     </div>

@@ -20,4 +20,8 @@ declare global {
         src: string;
         file: File | FileInfo;
     }
+
+    type VideoResponse = {
+        video: Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }>
+    }
 }

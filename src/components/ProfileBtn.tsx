@@ -2,18 +2,24 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from 'react'
 import Link from "next/link";
-import { Media, UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import { getImageSrcFromPath } from "@/lib/utility";
 import useUserProfilePicture from "@/hooks/useUserProfilePicture";
 import { IoPersonSharp } from "react-icons/io5";
 
 type ProfileBtnProps = {
+    username: string
     userRole: UserRole
 }
 
 export function ProfileBtn(props: ProfileBtnProps) {
     const profilePicture = useUserProfilePicture();
     const items: IMenuItem[] = [
+        {
+            id: "Channel",
+            label: "Channel",
+            url: `/${props.username}`,
+        },
         {
             id: "Profile",
             label: "Profile",

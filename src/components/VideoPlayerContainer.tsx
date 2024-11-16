@@ -11,10 +11,6 @@ import React, { useEffect, useState } from 'react'
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6';
 import { IoMdPerson } from 'react-icons/io';
 
-type VideoResponse = {
-    video: Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }>
-}
-
 export default function VideoPlayerContainer() {
     const { data: session, update } = useSession();
     const [video, setVideo] = useState<Prisma.VideoGetPayload<{ include: { likes: true, dislikes: true } }> | null>(null)
