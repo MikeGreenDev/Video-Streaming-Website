@@ -10,6 +10,7 @@ export default function SearchBar() {
     const doSearch = (e: any) => {
         console.log(search)
         router.push(`/search?s=${encodeURI(search)}`)
+        router.refresh();
     }
 
     return (
