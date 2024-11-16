@@ -1,6 +1,3 @@
-import { Media, MediaType } from "@prisma/client";
-import path from "path";
-
 
 export const getCurURL = () => {
     if (process.env.NODE_ENV == 'production') {
@@ -10,11 +7,16 @@ export const getCurURL = () => {
 }
 
 export const getImageSrcFromPath = (str: string): string => {
-    const publicStr = "/public/"
-    let index = str.indexOf(publicStr)
-    // -1 to keep the end slash so it's a relative path
-    index += publicStr.length - 1
-    return str.slice(index);
+    try {
+        const publicStr = "/public/"
+        let index = str.indexOf(publicStr)
+        // -1 to keep the end slash so it's a relative path
+        index += publicStr.length - 1
+        return str.slice(index);
+    } catch (e) {
+        console.error(e)
+        return ""
+    }
 }
 
 export const timestampDayDifference = (ts: any, ts2: any): number => {

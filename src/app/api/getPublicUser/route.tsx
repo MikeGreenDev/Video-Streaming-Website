@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         if (username) {
             userWhereObj.username = username
         }
-        const data = await prisma.user.findUnique({
+        const data = await prisma.user.findUniqueOrThrow({
             where: userWhereObj,
             include: {videos: getVideos}
         })
