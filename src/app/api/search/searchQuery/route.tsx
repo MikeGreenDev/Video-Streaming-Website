@@ -36,6 +36,18 @@ export async function GET(req: NextRequest) {
                     contains: query
                 }
             },
+            include: {
+                likes: true,
+                dislikes: true,
+                uploader: {
+                    select: {
+                        displayName: true,
+                        username: true,
+                        profilePicture: true,
+                        subCnt: true
+                    }
+                }
+            }
         })
 
         // TODO: Change the order to show higher views/subCnts

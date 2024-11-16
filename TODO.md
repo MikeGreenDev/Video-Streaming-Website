@@ -1,4 +1,5 @@
 - [] (HIGH PRIORITY) Validate all files that get sent to the server
+- [] Add the sizes prop to next/image's with fill on
 - [] Make the profile's page sidebar look better
 - [] Show progress of the video being uploaded
 - [] Reset the upload video popup when it gets uploaded
