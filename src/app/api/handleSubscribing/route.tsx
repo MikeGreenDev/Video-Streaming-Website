@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import prisma from '@/lib/prismadb'
-import { subscribe } from "diagnostics_channel";
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)

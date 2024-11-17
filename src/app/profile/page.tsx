@@ -54,6 +54,7 @@ function SidebarLink({ location, children }: { location: ParamLocation, children
         </div>
     )
 }
+
 export default function page() {
     const sidebarWidth = "12%"
     return (
