@@ -5,10 +5,11 @@ import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET() {
     const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
     try {
         const user = await prisma.user.findUnique({
             where: {
-                id: session?.user.id
+                id: session.user.id
             },
             select: {
                 subscribedTo: true

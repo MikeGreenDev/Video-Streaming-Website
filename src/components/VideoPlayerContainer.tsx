@@ -42,11 +42,13 @@ export default function VideoPlayerContainer() {
 
     const seeIfSubscribed = async () => {
         const res = await axios.get("/api/getUserSubscribedTo");
+        console.log("Res: ", res);
         const subTo: User[] = res.data.subscribedTo
+        console.log("SubTo: ", subTo);
         let found = false;
         if (subTo) {
             subTo.map((v) => {
-                if (v.id == session?.user.id) {
+                if (v.id == videoUploader?.id) {
                     console.log("Subscribed")
                     setIsSubscribed(true);
                     found = true;
@@ -120,6 +122,7 @@ export default function VideoPlayerContainer() {
                         <div className='h-auto my-auto'>
                             <button onClick={handleClickSubscribe} className={`${isSubscribed ? "bg-slate-500" : "bg-primary"} p-2 rounded-lg`}>{isSubscribed ? "Subscribed" : "Subscribe"}</button>
                         </div>
+                        <button onClick={seeIfSubscribed}>Sub</button>
                         <div className='grow' />
                         <div className='p-4 bg-backgroundHL rounded-lg flex flex-row gap-2'>
                             <button onClick={() => handleLikeDisLike({ like: !isLiked, dislike: false })} className={`flex flex-row gap-2 ${isLiked && "text-primary"}`}><FaThumbsUp />{video?.likes.length}</button>
