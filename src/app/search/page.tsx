@@ -28,7 +28,7 @@ export default function page() {
     return (
         <div>
             {loading ?
-                <div>Loading...</div>
+                <div className='mx-auto my-8 w-fit'>Loading...</div>
                 :
                 <div className='mx-[20%]'>
                     {
@@ -38,9 +38,10 @@ export default function page() {
                             return (
                                 <div key={`Result-${i}`}>
                                     <hr />
+                                    <div className='h-[15em]'>
                                     {isVideo ?
                                         <Link href={`/video?v=${v.id}`} className='group/videoLongCard'>
-                                            <div className='h-[15em] my-4 flex flex-row gap-2'>
+                                            <div className='h-full w-full my-4 flex flex-row gap-2'>
                                                 <div className='relative aspect-video h-full'>
                                                     <Image src={getImageSrcFromPath(JSON.parse(v.thumbnail as string).src)} alt={v.title} fill />
                                                 </div>
@@ -68,8 +69,18 @@ export default function page() {
                                             </div>
                                         </Link>
                                         :
-                                        <div>User: {v.id}</div>
+                                        <Link href={`/${v.username}`} className='group/userLongCard flex flex-row h-full w-full aspect-square gap-4 my-4'>
+                                            <div className='relative aspect-square h-full'>
+                                                <Image className='rounded-full' src={getImageSrcFromPath((v.profilePicture as Media)?.src)} alt={v.username} fill />
+                                            </div>
+                                            <div className='[&_*]:m-0 flex flex-col gap-2 w-fit'>
+                                                <h2 className='group-hover/userLongCard:text-primary'>{v.displayName}</h2>
+                                                <h4 className='text-gray-300'>{v.username}</h4>
+                                                <p>{v.subCnt} Subscribers</p>
+                                            </div>
+                                        </Link>
                                     }
+                                    </div>
                                 </div>
                             )
                         })
