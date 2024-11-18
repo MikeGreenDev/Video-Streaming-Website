@@ -9,10 +9,10 @@ export async function POST(req: NextRequest) {
     try {
         let mediaIDs = []
         if (d.media){
-            mediaIDs.push(JSON.parse(d.media).id);
+            mediaIDs.push(d.media.id);
         }
         if (d.thumbnail){
-            mediaIDs.push(JSON.parse(d.thumbnail).id);
+            mediaIDs.push(d.thumbnail.id);
         }
         if (mediaIDs.length > 0){
             await prisma.media.deleteMany({

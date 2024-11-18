@@ -78,11 +78,11 @@ export async function POST(req: NextRequest) {
 
             let vd = {}
             if (type === "Video"){
-                vd = {media: JSON.stringify(mr)}
+                vd = {media: mr}
             }else if (type === "ProfilePicture"){
-                vd = {profilePicture: JSON.stringify(mr)}
+                vd = {profilePicture: mr}
             }else if (type === "Thumbnail"){
-                vd = {thumbnail: JSON.stringify(mr)}
+                vd = {thumbnail: mr}
             }
 
             const r = await prisma.video.update({

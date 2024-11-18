@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     let videoPath;
     try {
         videoRes = await axios.get(`${getCurURL()}/api/getVideoEntry?videoID=${videoID}`)
-        videoPath = JSON.parse(videoRes.data.video.media).src
+        videoPath = videoRes.data.video.media.src
     } catch (e) {
         return NextResponse.json({ error: e }, {
             status: 528,
