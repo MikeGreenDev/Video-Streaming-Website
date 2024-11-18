@@ -54,17 +54,13 @@ export function ProfileBtn(props: ProfileBtnProps) {
     }, [ref])
 
     return (
-        <div ref={ref} className="w-fit">
-            <button onClick={toggle} className="rounded-full overflow-hidden">
+        <div ref={ref} className="w-fit h-fit">
+            <button onClick={toggle} className="rounded-full overflow-hidden m-auto h-fit">
                 {profilePicture ?
-                <Image
-                    src={getImageSrcFromPath(profilePicture?.src || "") || ""}
-                    alt="Profile Picture"
-                    width={100}
-                    height={100}
-                    className="relative w-full h-10"
-                />
-                :
+                    <div className='relative aspect-square h-[3em] m-auto'>
+                        <Image className='rounded-full' src={getImageSrcFromPath(profilePicture.src)} alt={"Profile Button"} fill style={{objectFit: "scale-down"}}/>
+                    </div>
+                    :
                     <IoPersonSharp />
                 }
             </button>

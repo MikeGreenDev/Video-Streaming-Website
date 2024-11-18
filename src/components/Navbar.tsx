@@ -28,7 +28,7 @@ export default function Navbar() {
                     <div className="flex-grow">
                         <SearchBar />
                     </div>
-                    <div className="hidden md:block w-[10em]">
+                    <div className="hidden md:block w-[10em] m-auto">
                         {!session?.user ?
                             <Login />
                             :
