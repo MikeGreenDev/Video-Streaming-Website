@@ -1,17 +1,33 @@
 "use client"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ProfileBtn } from "./ProfileBtn";
-import { UserRole } from "@prisma/client";
+import { Media, User, UserRole } from "@prisma/client";
 import Logo from "./Logo";
 import Login from "./Login";
 import { useSession } from "next-auth/react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import Link from "next/link";
 import SearchBar from "./SearchBar";
+import DropdownUI from "./DropdownUI";
+import axios from "axios";
+import Image from "next/image";
+import { getImageSrcFromPath } from "@/lib/utility";
+import { Tooltip } from "./ToolTip";
 
 export default function Navbar() {
     const { data: session } = useSession()
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+    const [subbedTo, setSubbedTo] = useState<User[]>([]);
+
+    useEffect(() => {
+        getSubscribedTo();
+    }, [])
+
+    const getSubscribedTo = async () => {
+        if (!session) return;
+        const res = await axios.get("/api/getUserSubscribedTo");
+        setSubbedTo(res.data.subscribedTo)
+    }
 
     return (
         <>
@@ -38,9 +54,58 @@ export default function Navbar() {
                 </div>
             </div>
                 {sidebarOpen &&
-                    <div className="w-[12em] h-[100vh] bg-red-500">
-                        <ul className="w-full p-2 text-center text-[1.2em] font-medium">
-                            <li><Link href="/">Home</Link></li>
+                    <div className="w-[14em] h-[100vh] bg-backgroundHL overflow-y-auto">
+                        <ul className="w-full p-2 text-center text-[1.2em] font-medium [&>*]:p-1 text-white">
+                            <li><Link className="block px-4 py-1 hover:text-primary" href="/">Home</Link></li>
+                            <li><Link className="block px-4 py-1 hover:text-primary" href="/">Explore</Link></li>
+                            <li><Link className="block px-4 py-1 hover:text-primary" href="/">Trending</Link></li>
+                            {session &&
+                                <>
+                                    <hr />
+                                    <li>
+                                        <DropdownUI title="You">
+                                            <ul className="[&>*]:block [&>*]:px-4 [&>*]:py-1 hover:[&>*]:text-primary [&>*]:text-[.9em]">
+                                                <li><Link href="#">History</Link></li>
+                                                <li><Link href="#">Playlists</Link></li>
+                                                <li><Link href="#">Watch Later</Link></li>
+                                                <li><Link href="#">Subscriptions</Link></li>
+                                            </ul>
+                                        </DropdownUI>
+                                    </li>
+                                </>
+                            }
+                            <hr />
+                            <li>
+                                <DropdownUI title="Tags" isOpenDefault={true}>
+                                    <ul role="menu" aria-orientation="vertical" aria-labelledby="options-menu" className="[&>*]:block [&>*]:px-4 [&>*]:py-1 hover:[&>*]:text-primary [&>*]:text-[.9em]">
+                                        <li><Link href="#">Music</Link></li>
+                                        <li><Link href="#">Gaming</Link></li>
+                                        <li><Link href="#">Sports</Link>
+                                        </li>
+                                    </ul>
+                                </DropdownUI>
+                            </li>
+                            {session &&
+                                <>
+                                    <hr />
+                                    <li>
+                                        <DropdownUI title="Subscriptions">
+                                            <ul className="[&>*]:block [&>*]:px-2 [&>*]:py-1 hover:[&>*]:text-primary [&>*]:text-[.9em] overflow-x-visible">
+                                                {subbedTo.map((s) => (
+                                                    <li><Link href={`/${s.username}`} className="flex flex-row overflow-x-visible flex-wrap">
+                                                        <div className='min-w-8 w-8 h-2/3 aspect-square relative my-auto'>
+                                                            <Image src={getImageSrcFromPath((s.profilePicture as Media)?.src)} alt={`${s.username}'s Profile Picture`} fill className='rounded-full' />
+                                                        </div>
+                                                        <h4 className="font-normal my-2 ml-2">
+                                                            {s.displayName}
+                                                        </h4>
+                                                    </Link></li>
+                                                ))}
+                                            </ul>
+                                        </DropdownUI>
+                                    </li>
+                                </>
+                            }
                         </ul>
                     </div>
                 }
