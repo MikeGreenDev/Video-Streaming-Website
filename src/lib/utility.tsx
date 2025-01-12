@@ -31,20 +31,17 @@ export const getDateDifferenceInStr = (ts: string, ts2: string): string => {
     const d2 = new Date(ts2)
     const daysDiff = timestampDayDifference(d1, d2)
     let t = 0;
-    if (daysDiff > 7) {
-        t = daysDiff / 7
-        res = `${t} Weeks`;
-        if (t > 1) {
-            res += 's'
-        }
-    } else if (daysDiff > 365) {
+    if (daysDiff > 365) {
         t = daysDiff / 365
         res = `${t} Year`;
+    } else if (daysDiff > 7) {
+        t = daysDiff / 7
+        res = `${t} Week`;
     } else {
         t = daysDiff
-        res = `${daysDiff} Day`
+        res = `${t} Day`
     }
-    if (t > 1) {
+    if (Math.floor(t) > 1) {
         res += 's'
     }
     res += ' ago'
