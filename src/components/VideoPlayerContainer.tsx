@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6';
 import { IoMdPerson } from 'react-icons/io';
+import SubscribeBtn from './SubscribeBtn';
 
 export default function VideoPlayerContainer() {
     const { data: session, update } = useSession();
@@ -65,7 +66,6 @@ export default function VideoPlayerContainer() {
             subscribe: !isSubscribed,
             uploaderID: videoUploader?.id
         }
-        console.log(d)
         let opts: AxiosRequestConfig = {
             headers: { "Content-Type": "application/json" },
         }
@@ -103,26 +103,28 @@ export default function VideoPlayerContainer() {
                     <h2 className='mb-2'>{video?.title}</h2>
                     <div className='flex flex-row h-fit gap-2'>
                         <div className={`my-auto h-full w-[3em] aspect-square rounded-lg overflow-hidden ${!videoUploader?.profilePicture && "bg-slate-500"}`}>
-                            {videoUploader && videoUploader.profilePicture ?
-                                <Image
-                                    src={getImageSrcFromPath((videoUploader.profilePicture as Media).src)}
-                                    alt="Profile Picture"
-                                    width={1000}
-                                    height={1000}
-                                    className="relative w-full h-auto"
-                                />
-                                :
-                                <IoMdPerson className='h-full m-auto' />
-                            }
+                            <div className='w-full aspect-square relative'>
+                                {videoUploader && videoUploader.profilePicture ?
+                                    <Image
+                                        src={getImageSrcFromPath((videoUploader.profilePicture as Media).src)}
+                                        alt="Profile Picture"
+                                        fill
+                                        className='rounded-full'
+                                    />
+                                    :
+                                    <IoMdPerson className='h-full w-full rounded-full' />
+                                }
+                            </div>
                         </div>
                         <div className='h-auto my-auto'>
                             <Link className='hover:text-primary' href={`/${videoUploader?.username}`}><h3 className='my-0'>{videoUploader?.displayName}</h3></Link>
                             <p>{videoUploader?.subCnt} Subscribers</p>
                         </div>
-                        <div className='h-auto my-auto'>
-                            <button onClick={handleClickSubscribe} className={`${isSubscribed ? "bg-slate-500" : "bg-primary"} p-2 rounded-lg`}>{isSubscribed ? "Subscribed" : "Subscribe"}</button>
-                        </div>
-                        <button onClick={seeIfSubscribed}>Sub</button>
+                        {videoUploader &&
+                            <div className='h-auto my-auto'>
+                                <SubscribeBtn uploader={videoUploader} />
+                            </div>
+                        }
                         <div className='grow' />
                         <div className='p-4 bg-backgroundHL rounded-lg flex flex-row gap-2'>
                             <button onClick={() => handleLikeDisLike({ like: !isLiked, dislike: false })} className={`flex flex-row gap-2 ${isLiked && "text-primary"}`}><FaThumbsUp />{video?.likes.length}</button>

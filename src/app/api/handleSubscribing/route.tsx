@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
 
     try {
         let da = {}
+        let ua = {}
         if (d.subscribe) {
             da = {
                 subscribers:{ connect: { id: session.user.id } }, 
@@ -18,12 +19,18 @@ export async function POST(req: NextRequest) {
                     increment: 1
                 }
             }
+            ua = {
+                subscribedTo:{ connect: { id: session.user.id } }, 
+            }
         } else {
             da = {
                 subscribers: { disconnect: { id: session.user.id } },
                 subCnt: {
                     decrement: 1
                 }
+            }
+            ua = {
+                subscribedTo:{ disconnect: { id: session.user.id } }, 
             }
         }
         await prisma.user.update({

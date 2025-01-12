@@ -15,6 +15,7 @@ export async function GET() {
                 subscribedTo: true
             }
         })
+        console.log(user)
         return NextResponse.json({ success: true, subscribedTo: user?.subscribedTo }, {
             status: 200,
         })

@@ -1,12 +1,11 @@
 "use client"
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import axios, { AxiosRequestConfig } from 'axios';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react'
 
 export default function SubscribeBtn({ uploader }: { uploader: User }) {
     const { data: session, update } = useSession();
-    const [videoUploader, setVideoUploader] = useState<User | null>(uploader)
     const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
 
     useEffect(() => {
@@ -19,7 +18,7 @@ export default function SubscribeBtn({ uploader }: { uploader: User }) {
         let found = false;
         if (subTo) {
             subTo.map((v) => {
-                if (v.id == session?.user.id) {
+                if (v.id == uploader.id) {
                     console.log("Subscribed")
                     setIsSubscribed(true);
                     found = true;
@@ -34,9 +33,8 @@ export default function SubscribeBtn({ uploader }: { uploader: User }) {
     const handleClickSubscribe = () => {
         const d = {
             subscribe: !isSubscribed,
-            uploaderID: videoUploader?.id
+            uploaderID: uploader.id
         }
-        console.log(d)
         let opts: AxiosRequestConfig = {
             headers: { "Content-Type": "application/json" },
         }
@@ -45,9 +43,10 @@ export default function SubscribeBtn({ uploader }: { uploader: User }) {
             seeIfSubscribed();
         })
     }
+
     return (
         <div className='h-auto my-auto'>
-            <button onClick={handleClickSubscribe} className={`${isSubscribed ? "bg-slate-500" : "bg-primary"} p-2 rounded-lg`}>{isSubscribed ? "Subscribed" : "Subscribe"}</button>
+            <button disabled={uploader.id === session?.user.id || session?.user === null} onClick={handleClickSubscribe} className={`${isSubscribed ? "bg-slate-500" : "bg-primary"} p-2 rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-600`}>{isSubscribed ? "Subscribed" : "Subscribe"}</button>
         </div>
     )
 }
