@@ -12,16 +12,21 @@ import DropdownUI from "./DropdownUI";
 import axios from "axios";
 import Image from "next/image";
 import { getImageSrcFromPath } from "@/lib/utility";
-import { Tooltip } from "./ToolTip";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
     const { data: session } = useSession()
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     const [subbedTo, setSubbedTo] = useState<User[]>([]);
+    const pathname = usePathname()
 
     useEffect(() => {
         getSubscribedTo();
     }, [])
+
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [pathname])
 
     const getSubscribedTo = async () => {
         if (!session) return;
@@ -57,8 +62,8 @@ export default function Navbar() {
                     <div className="w-[14em] h-[100vh] bg-backgroundHL overflow-y-auto">
                         <ul className="w-full p-2 text-center text-[1.2em] font-medium [&>*]:p-1 text-white">
                             <li><Link className="block px-4 py-1 hover:text-primary" href="/">Home</Link></li>
-                            <li><Link className="block px-4 py-1 hover:text-primary" href="/">Explore</Link></li>
-                            <li><Link className="block px-4 py-1 hover:text-primary" href="/">Trending</Link></li>
+                            <li><Link className="block px-4 py-1 hover:text-primary" href="/feed/trending">Explore</Link></li>
+                            <li><Link className="block px-4 py-1 hover:text-primary" href="/feed/trending">Trending</Link></li>
                             {session &&
                                 <>
                                     <hr />
