@@ -13,7 +13,7 @@ export default function SubscribeBtn({ uploader }: { uploader: User }) {
     }, [])
 
     const seeIfSubscribed = async () => {
-        const res = await axios.get("/api/getUserSubscribedTo");
+        const res = await axios.get("/api/User/getUserSubscribedTo");
         const subTo: User[] = res.data.subscribedTo
         let found = false;
         if (subTo) {

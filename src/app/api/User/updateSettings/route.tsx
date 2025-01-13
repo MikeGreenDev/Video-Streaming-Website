@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from '@/lib/prismadb'
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Media, MediaType, User } from "@prisma/client";
 import { uploadFile } from "@/lib/uploadFileHelper";
 import { JsonValue } from "@prisma/client/runtime/library";
@@ -9,6 +9,7 @@ import { JsonValue } from "@prisma/client/runtime/library";
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
+
     const d = await req.formData()
     const fdUsername = d.get('username') as string || ""
     const fdDisplayName = d.get('displayName') as string || ""

@@ -8,7 +8,7 @@ const useUserHeader = () => {
 
     useEffect(() => {
         const getHeader = async () => {
-            await axios.get(`/api/getUserHeader`).then((res) => {
+            await axios.get(`/api/User/getUserHeader`).then((res) => {
                 setHeader(res.data.header)
             }).catch(() => {
                 setHeader(null)

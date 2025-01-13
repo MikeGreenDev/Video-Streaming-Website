@@ -30,7 +30,7 @@ export default function Navbar() {
 
     const getSubscribedTo = async () => {
         if (!session) return;
-        const res = await axios.get("/api/getUserSubscribedTo");
+        const res = await axios.get("/api/User/getUserSubscribedTo");
         setSubbedTo(res.data.subscribedTo)
     }
 

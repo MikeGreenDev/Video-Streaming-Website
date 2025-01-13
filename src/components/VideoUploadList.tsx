@@ -29,7 +29,7 @@ export const VideoUploadList = () => {
     const [video, setVideo] = useState<Video | undefined>(undefined)
 
     const getVideos = async () => {
-        const r = await axios.get("/api/getUserVideos");
+        const r = await axios.get("/api/User/getUserVideos");
         setVideos(r.data.videos);
     }
 
@@ -47,7 +47,7 @@ export const VideoUploadList = () => {
             headers: { "Content-Type": "application/json" },
         }
 
-        await axios.post("/api/deleteVideo", vid, opts).then(() => {
+        await axios.post("/api/User/deleteVideo", vid, opts).then(() => {
             getVideos()
         }).catch((e) => {
             throw new Error(e);
@@ -88,7 +88,7 @@ export const VideoUploadList = () => {
     }
 
     const updateVisibility = async (video: Video, vis: Visibility) => {
-        await axios.get(`/api/updateVideoVisibility?videoID=${video.id}&visibility=${vis}`).then((r) => {
+        await axios.get(`/api/User/updateVideoVisibility?videoID=${video.id}&visibility=${vis}`).then((r) => {
             getVideos();
         }).catch((e) => {
             throw new Error(e);

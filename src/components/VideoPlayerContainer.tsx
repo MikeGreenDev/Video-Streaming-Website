@@ -6,7 +6,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { FaThumbsDown, FaThumbsUp } from 'react-icons/fa6';
 import { IoMdPerson } from 'react-icons/io';
@@ -22,6 +22,7 @@ export default function VideoPlayerContainer() {
     const searchParams = useSearchParams();
     const videoID = searchParams.get("v") || "";
     const timeSkip = searchParams.get("t") || "";
+    const pathname = usePathname();
 
     useEffect(() => {
         const getVideoEntry = async () => {
@@ -32,25 +33,29 @@ export default function VideoPlayerContainer() {
             })
         }
         getVideoEntry()
+
+        const addToHistory = async () => {
+            await axios.post(`/api/addHistory`, {videoLink: pathname})
+        }
+
+        if (session){
+            addToHistory();
+        }
     }, [])
 
     const getUploaderInfo = async (uploaderID: string) => {
-        console.log("VidUpID: ", uploaderID)
         axios.get(`/api/getPublicUser?userID=${uploaderID}`).then((res) => {
             setVideoUploader(res.data.publicUser);
         })
     }
 
     const seeIfSubscribed = async () => {
-        const res = await axios.get("/api/getUserSubscribedTo");
-        console.log("Res: ", res);
+        const res = await axios.get("/api/User/getUserSubscribedTo");
         const subTo: User[] = res.data.subscribedTo
-        console.log("SubTo: ", subTo);
         let found = false;
         if (subTo) {
             subTo.map((v) => {
                 if (v.id == videoUploader?.id) {
-                    console.log("Subscribed")
                     setIsSubscribed(true);
                     found = true;
                 }
@@ -59,21 +64,6 @@ export default function VideoPlayerContainer() {
         if (!found) {
             setIsSubscribed(false);
         }
-    }
-
-    const handleClickSubscribe = () => {
-        const d = {
-            subscribe: !isSubscribed,
-            uploaderID: videoUploader?.id
-        }
-        let opts: AxiosRequestConfig = {
-            headers: { "Content-Type": "application/json" },
-        }
-        axios.post("/api/handleSubscribing", d, opts).then(() => {
-            update()
-            getUploaderInfo(video?.uploaderID || "");
-            seeIfSubscribed();
-        })
     }
 
     const handleLikeDisLike = ({ like, dislike }: { like: boolean, dislike: boolean }) => {

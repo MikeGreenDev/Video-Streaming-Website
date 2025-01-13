@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from '@/lib/prismadb'
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET() {
     const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
+
     try {
         const user = await prisma.user.findUnique({
             where: {
-                id: session?.user.id
+                id: session.user.id
             },
             select: {
-                profilePicture: true
+                subscribedTo: true
             }
         })
-        return NextResponse.json({ success: true, profilePicture: user?.profilePicture }, {
+        console.log(user)
+        return NextResponse.json({ success: true, subscribedTo: user?.subscribedTo }, {
             status: 200,
         })
     } catch (e) {

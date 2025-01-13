@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from '@/lib/prismadb'
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
     const d = await req.json()
     try {
         let mediaIDs = []
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         await prisma.video.delete({
             where: {
                 id: d.videoID,
-                uploaderID: session?.user.id
+                uploaderID: session.user.id
             }
         })
 

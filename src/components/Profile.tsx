@@ -117,7 +117,7 @@ export default function Profile() {
         let opts: AxiosRequestConfig = {
             headers: { "Content-Type": "multipart/form-data" },
         }
-        axios.post("/api/updateSettings", fd, opts).then(() => {
+        axios.post("/api/User/updateSettings", fd, opts).then(() => {
             setIsSaving(false)
             update();
         })

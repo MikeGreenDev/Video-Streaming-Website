@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from '@/lib/prismadb'
 import { Visibility } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: "Session not found" }, { status: 409 });
+
     const search = new URL(req.url || "").search;
     const urlParams = new URLSearchParams(search);
     const videoID = urlParams.get('videoID') as string;

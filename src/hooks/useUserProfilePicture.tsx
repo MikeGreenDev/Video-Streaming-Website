@@ -10,7 +10,7 @@ const useUserProfilePicture = () => {
 
     useEffect(() => {
         const getPfp = async () => {
-            await axios.get(`/api/getUserPFP`).then((res) => {
+            await axios.get(`/api/User/getUserPFP`).then((res) => {
                 setPfp(res.data.profilePicture)
             }).catch(() => {
                 setPfp(null)

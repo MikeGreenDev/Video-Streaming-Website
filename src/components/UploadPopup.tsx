@@ -115,7 +115,7 @@ export default function UploadPopup(props: UploadPopupProps) {
             let opts: AxiosRequestConfig = {
                 headers: { "Content-Type": "application/json" },
             }
-            const r = await axios.post("/api/createVideo", vid, opts)
+            const r = await axios.post("/api/User/createVideo", vid, opts)
             videoID = r.data.videoID;
             update()
         } catch (e: any) {
@@ -218,7 +218,7 @@ export default function UploadPopup(props: UploadPopupProps) {
             let opts: AxiosRequestConfig = {
                 headers: { "Content-Type": "multipart/form-data" },
             }
-            await axios.post("/api/updateVideo", vfd, opts)
+            await axios.post("/api/User/updateVideo", vfd, opts)
             update()
             setIsUploading(false)
             if (props.closeBtn) {

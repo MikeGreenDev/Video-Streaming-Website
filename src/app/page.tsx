@@ -4,7 +4,7 @@ import { Video } from "@prisma/client";
 import axios from "axios";
 
 export default async function Home() {
-    const videoRes = await axios.get(`${getCurURL()}/api/getHomeVideos`)
+    const videoRes = await axios.get(`${getCurURL()}/api/GetVideos/getHomeVideos`)
     const videos = videoRes.data.videos
     return (
         <div className="flex flex-wrap gap-6 justify-start my-8 mx-16">
