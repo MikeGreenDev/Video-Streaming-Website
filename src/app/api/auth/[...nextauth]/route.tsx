@@ -59,7 +59,7 @@ export const authOptions: AuthOptions = {
         signIn: "/login"
     },
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user, account, trigger, session }) {
             if (user && account) {
                 token.id = user.id
                 token.accessToken = user.accessToken
@@ -69,7 +69,16 @@ export const authOptions: AuthOptions = {
                 token.role = user.role
             }
 
-            console.log("JWT Callback", { token, user, account });
+            if (trigger === "update") {
+                // NOTE: If in the future we don't need full db fetch updates everytime. We can use `session` to pass a string to choose different types of updates
+                const newUser = await prisma.user.findUnique({
+                    omit: { passwordHash: false },
+                    where: { id: token.id }
+                });
+                token = { ...token, ...newUser }
+            }
+
+            //console.log("JWT Callback", { token, user, account, trigger, session });
             return token;
         },
         async session({ session, token }) {

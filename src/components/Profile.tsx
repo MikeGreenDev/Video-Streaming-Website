@@ -9,6 +9,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { getImageSrcFromPath } from '@/lib/utility';
 import useUserProfilePicture from '@/hooks/useUserProfilePicture';
 import useUserHeader from '@/hooks/useUserHeader';
+import { useRouter } from 'next/navigation';
 
 type SettingsState = {
     username: string;
@@ -23,7 +24,7 @@ type SettingsState = {
 
 type Action = {
     type: string
-    arg: number | string | File | null
+    arg: number | string | File | null | SettingsState
 }
 function reducer(state: SettingsState, action: Action): SettingsState {
     switch (action.type) {
@@ -63,6 +64,8 @@ function reducer(state: SettingsState, action: Action): SettingsState {
                 return { ...state, headerPreview: action.arg }
             }
             break;
+        case "OVERRIDE":
+            return action.arg as SettingsState
         default:
             throw new Error("Invalid Settings Argument")
     }
@@ -71,6 +74,7 @@ function reducer(state: SettingsState, action: Action): SettingsState {
 
 export default function Profile() {
     const { data: session, update } = useSession();
+    const router = useRouter();
     const profilePicture = useUserProfilePicture();
     const header = useUserHeader();
     const [isSaving, setIsSaving] = useState<boolean>(false)
@@ -116,10 +120,25 @@ export default function Profile() {
         fd.append('header', settingsState.header as File);
         let opts: AxiosRequestConfig = {
             headers: { "Content-Type": "multipart/form-data" },
+            withCredentials: true
         }
-        axios.post("/api/User/updateSettings", fd, opts).then(() => {
+        axios.post("/api/User/updateSettings", fd, opts).then(async () => {
             setIsSaving(false)
-            update();
+            await update().then((sess) => {
+                console.log(sess)
+                dispatchSettings({
+                    type: "OVERRIDE", arg: {
+                        username: sess?.user.username || "",
+                        displayName: sess?.user.displayName || "",
+                        password: "",
+                        email: sess?.user.email || "",
+                        profilePicture: profilePicture || null,
+                        profilePicturePreview: "",
+                        header: header || null,
+                        headerPreview: "",
+                    }
+                })
+            });
         })
     }
 

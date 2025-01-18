@@ -41,11 +41,11 @@ export async function POST(req: NextRequest) {
                 header: fdHeader !== null,
             }
         })
-    }catch(e: any){
+    } catch (e: any) {
         return NextResponse.json({ error: e }, { status: 409 });
     }
 
-    if (!userPics){
+    if (!userPics) {
         return NextResponse.json({ error: "Could not get user pictures." }, { status: 409 });
     }
 
@@ -79,12 +79,15 @@ export async function POST(req: NextRequest) {
         })
     }
 
+    console.log("UD")
+    console.log(ud)
+    console.log(session.user.id)
     try {
-        const r = await prisma.user.update({
+        await prisma.user.update({
             where: {
-                id: session?.user.id
+                id: session.user.id
             },
-            data: ud as any
+            data: ud as JSON
         })
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (e: any) {
